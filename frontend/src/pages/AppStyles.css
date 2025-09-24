@@ -1,0 +1,626 @@
+/* AppStyles.css */
+body {
+  background: linear-gradient(135deg, #dbeafe 0%, #f5d0fe 100%);
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* General Card Layout */
+.page-container {
+  max-width: 420px;
+  width: 100%;
+  margin: 40px auto;
+  padding: 32px 28px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s;
+}
+
+.page-container:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+}
+
+/* Headings */
+.page-container h2 {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #7c3aed;
+  margin-bottom: 22px;
+}
+
+/* Forms */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form input,
+.form select {
+  padding: 12px;
+  font-size: 15px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  transition: 0.2s;
+}
+
+.form input:focus,
+.form select:focus {
+  border-color: #7c3aed;
+  background: #fff;
+  outline: none;
+}
+
+/* Buttons */
+.form button {
+  margin-top: 6px;
+  background: linear-gradient(90deg, #a78bfa 0%, #f472b6 100%);
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s;
+}
+
+.form button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(90deg, #7c3aed 0%, #ec4899 100%);
+}
+
+/* Error message */
+.error-message {
+  color: #db2777;
+  background: #fef2f2;
+  border-left: 4px solid #f87171;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+/* Dashboard card */
+.dashboard-info {
+  background: #f3f6fa;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 15px;
+  color: #243649;
+  line-height: 1.6;
+}/* Navbar Styles */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  z-index: 1000;
+}
+
+.nav-left .logo {
+  font-size: 22px;
+  font-weight: 800;
+  color: #7c3aed;
+  text-decoration: none;
+}
+
+.nav-center {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-link {
+  text-decoration: none;
+  font-weight: 500;
+  color: #374151;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: #7c3aed;
+}
+
+.nav-search {
+  padding: 8px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.nav-search:focus {
+  border-color: #7c3aed;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.nav-btn {
+  background: transparent;
+  color: #374151;
+  border: 1.5px solid #d1d5db;
+}
+
+.nav-btn:hover {
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
+
+.signup-btn {
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+}
+
+.signup-btn:hover {
+  background: #6d28d9;
+}
+/* AppStyles.cs
+mai ye update krde */
+.form input,
+.form select {
+  padding: 12px;
+  font-size: 15px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  transition: 0.2s;
+  color: black;
+}
+/* Post Job form wrapper (same style as login) */
+.post-job-container {
+  max-width: 420px;
+  margin: 80px auto;
+  padding: 35px 30px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+/* Title */
+.post-job-container h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  color: #7c3aed;
+}
+
+/* Inputs */
+.post-job-container input,
+.post-job-container textarea {
+  width: 350px;
+  /* margin-right: 50px; */
+  padding: 12px 14px;
+  margin-bottom: 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 15px;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+  color: #374151;
+}
+
+/* Focus glow */
+.post-job-container input:focus,
+.post-job-container textarea:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.3);
+  background: #fff;
+  outline: none;
+}
+
+/* Textarea */
+.post-job-container textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Submit button */
+.post-job-container button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(90deg, #a855f7, #ec4899);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.post-job-container button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* ================= JOBS LIST STYLING ================= */
+
+.jobs-list {
+  max-width: 1100px;
+  margin: 50px auto;
+  padding: 25px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.jobs-list h2 {
+  text-align: center;
+  font-size: 2.3rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: #1e3a8a; /* deep blue */
+  position: relative;
+  letter-spacing: 0.5px;
+}
+
+.jobs-list h2::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  margin: 12px auto 0;
+  border-radius: 4px;
+}
+
+.jobs-list ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+/* Job Card */
+.job-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.job-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  border-color: #3b82f6;
+}
+
+.job-card h3 {
+  font-size: 1.55rem;
+  color: #0f172a;
+  margin-bottom: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.job-card p {
+  margin: 6px 0;
+  color: #4b5563; /* slightly softer gray */
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.job-card strong {
+  color: #1e40af; /* navy blue for highlights */
+  font-weight: 600;
+}
+
+/* Job Actions */
+.job-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+}
+
+.job-actions button {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.job-actions button:first-child {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  color: #fff;
+}
+
+.job-actions button:first-child:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+}
+
+.job-actions button:last-child {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.job-actions button:last-child:hover {
+  background: #e5e7eb;
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .jobs-list h2 {
+    font-size: 1.8rem;
+  }
+  .job-card {
+    padding: 18px;
+  }
+  .job-card h3 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Search Bar */
+.nav-search {
+  width: 280px;
+  padding: 10px 40px 10px 15px; /* space for icon */
+  font-size: 15px;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  margin-right: 20px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='gray'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z'/%3E%3C/svg%3E") no-repeat right 12px center;
+  background-size: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  color: #374151;
+  /* Added a tiny comment for Git */
+}
+
+.nav-search:hover {
+  border-color: #aaa;
+}
+
+.nav-search:focus {
+  border-color: #4cafef;
+  box-shadow: 0 0 6px rgba(76, 175, 239, 0.4);
+}
+
+/* Dropdown Filter */
+.nav-filter {
+  width: 150px;
+  padding: 10px 15px;
+  font-size: 15px;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='gray' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E") no-repeat right 12px center;
+  background-size: 16px;
+  appearance: none; /* removes default arrow */
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  color: #374151;
+  /* Tiny comment added for Git */
+}
+
+.nav-filter:hover {
+  border-color: #aaa;
+}
+
+.nav-filter:focus {
+  border-color: #4cafef;
+  box-shadow: 0 0 6px rgba(76, 175, 239, 0.4);
+}
+
+.job-buttons {
+  display: flex;
+  gap: 10px; /* space between buttons */
+  margin-top: 10px;
+}
+
+.btn-complete {
+  background-color: #ff9800; /* orange */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-complete:hover {
+  background-color: #e68900;
+}
+
+.chat-btn {
+  background-color: #007bff; /* blue */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.chat-btn:hover {
+  background-color: #0062cc;
+}
+
+/* MyJobs.css */
+
+/* Container */
+.my-jobs-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Heading */
+.my-jobs-container h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #1f2937; /* dark gray */
+}
+
+/* Job List */
+.my-jobs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Job Card */
+.my-job-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 18px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.my-job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* Job Info */
+.my-job-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.my-job-card p {
+  margin: 4px 0;
+  color: #374151;
+  font-size: 14px;
+}
+
+.my-job-card strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.status-pending { background-color: #f59e0b; }   /* orange */
+.status-accepted { background-color: #3b82f6; }  /* blue */
+.status-completed { background-color: #10b981; } /* green */
+.status-rated { background-color: #8b5cf6; }     /* purple */
+.status-unknown { background-color: #6b7280; }   /* gray */
+
+/* Rating Input */
+.my-job-card input[type="number"] {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 10px;
+  width: 70px;
+  outline: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.my-job-card input[type="number"]:focus {
+  border-color: #7c3aed;
+}
+
+/* Buttons */
+.my-job-card button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background-color: #7c3aed;
+  color: #fff;
+  border: none;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.my-job-card button:hover {
+  background-color: #6d28d9;
+  transform: translateY(-1px);
+}
+
+/* Complete Button */
+.btn-complete {
+  background-color: #10b981;
+  margin-left: 8px;
+}
+
+.btn-complete:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
+/* Loading Text */
+.text-center {
+  text-align: center;
+  font-size: 16px;
+  color: #4b5563;
+  margin-top: 40px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .my-job-card input[type="number"] {
+    width: 100%;
+  }
+
+  .btn-complete {
+    width: 100%;
+    margin-left: 0;
+  }
+}
