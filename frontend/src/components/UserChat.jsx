@@ -44,6 +44,7 @@ export default function UserChat({ currentUserId }) {
 
 const handleSend = async () => {
   if (!newMsg.trim()) return;
+  console.log({ posterId, acceptedUserId, jobId, currentUserId });
 
   if (!posterId || !acceptedUserId || !jobId || !currentUserId) {
     return alert("Cannot send message: missing required info.");

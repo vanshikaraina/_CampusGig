@@ -5,6 +5,7 @@ const FAQ_OPTIONS = [
   { question: "What are your working hours?", answer: "We operate from 9 AM to 6 PM, Monday to Friday." },
   { question: "How can I post a job?", answer: "Go to 'Post Job' page and fill the job details form." },
   { question: "How do I accept a job?", answer: "On the jobs list, click 'Accept' for any available job." },
+  { question: "How do I contact support?", answer: "Use the 'Contact Us' form or email support@campusgig.com." },
   { question: "Other issues", answer: null }, // for user input
 ];
 
