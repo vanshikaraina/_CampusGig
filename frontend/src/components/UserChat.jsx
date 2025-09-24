@@ -42,23 +42,29 @@ export default function UserChat({ currentUserId }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!newMsg.trim()) return;
+const handleSend = async () => {
+  if (!newMsg.trim()) return;
 
-    try {
-      const res = await api.post("/chat", {
-        posterId,
-        acceptedUserId,
-        jobId,
-        senderId: currentUserId,
-        text: newMsg,
-      });
-      setMessages(res.data);
-      setNewMsg("");
-    } catch (err) {
-      console.error("Error sending message:", err);
-    }
-  };
+  if (!posterId || !acceptedUserId || !jobId || !currentUserId) {
+    return alert("Cannot send message: missing required info.");
+  }
+
+  try {
+    const res = await api.post("/chat", {
+      posterId: posterId.toString(),
+      acceptedUserId: acceptedUserId.toString(),
+      jobId: jobId.toString(),
+      senderId: currentUserId.toString(),
+      text: newMsg.trim(),
+    });
+    setMessages(res.data);
+    setNewMsg("");
+  } catch (err) {
+    console.error("Error sending message:", err);
+    alert(err.response?.data?.message || "Failed to send message");
+  }
+};
+
 
   return (
     <div className="user-chat">

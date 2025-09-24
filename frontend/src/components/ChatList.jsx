@@ -74,7 +74,6 @@
 //   );
 // }
 
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -90,11 +89,15 @@ export default function ChatList() {
       if (!user?._id) return;
       try {
         const res = await api.get(`/chat/user/${user._id}`);
-        // Only keep chats where posterId and acceptedUserId are populated
-        const populatedChats = res.data.filter(
-          (chat) => chat?.posterId?.name && chat?.acceptedUserId?.name
+        // Keep only chats with valid posterId and acceptedUserId
+        const validChats = res.data.filter(
+          (chat) =>
+            chat?.posterId?._id &&
+            chat?.posterId?.name &&
+            chat?.acceptedUserId?._id &&
+            chat?.acceptedUserId?.name
         );
-        setChats(populatedChats);
+        setChats(validChats);
       } catch (err) {
         console.error("Error fetching chats:", err);
       }
@@ -103,40 +106,42 @@ export default function ChatList() {
     fetchChats();
   }, [user?._id]);
 
-    const handleChatClick = (chat) => {
-      if (!chat?.posterId || !chat?.acceptedUserId) return;
+  const handleChatClick = (chat) => {
+    if (!chat?.posterId?._id || !chat?.acceptedUserId?._id) return;
 
-      // Determine the "other user"
-      const otherUser =
-        chat.posterId._id.toString() === user._id
-          ? chat.acceptedUserId
-          : chat.posterId;
+    // Determine the "other user"
+    const otherUser =
+      chat.posterId._id.toString() === user._id
+        ? chat.acceptedUserId
+        : chat.posterId;
 
-      // If multiple chats exist with this user, pick the latest one
-      const otherUserChats = chats.filter(
-        (c) =>
-          (c.posterId._id.toString() === otherUser._id) ||
-          (c.acceptedUserId._id.toString() === otherUser._id)
-      );
+    // Filter chats with this other user
+    const otherUserChats = chats.filter(
+      (c) =>
+        c?.posterId?._id === otherUser._id || c?.acceptedUserId?._id === otherUser._id
+    );
 
-      // Sort by latest message date
-      const latestChat = otherUserChats.sort((a, b) => {
+    if (!otherUserChats.length) return;
+
+    // Sort by latest message date
+    const latestChat = otherUserChats
+      .filter((c) => c.messages?.length > 0)
+      .sort((a, b) => {
         const aLast = a.messages[a.messages.length - 1]?.createdAt || 0;
         const bLast = b.messages[b.messages.length - 1]?.createdAt || 0;
         return new Date(bLast) - new Date(aLast);
       })[0];
 
-      // Pick jobId from latest message
-      const latestJobId = latestChat.messages[latestChat.messages.length - 1]?.jobId;
-      if (!latestJobId) return; // skip if no messages yet
+    if (!latestChat || !latestChat.messages?.length) return;
 
-      navigate(
-        `/chat/${latestChat.posterId._id}/${latestJobId}/${latestChat.acceptedUserId._id}`,
-        { state: { posterName: otherUser.name } }
-      );
+    const latestJobId = latestChat.messages[latestChat.messages.length - 1]?.jobId;
+    if (!latestJobId) return;
 
-    };
-
+    navigate(
+      `/chat/${latestChat.posterId._id}/${latestJobId}/${latestChat.acceptedUserId._id}`,
+      { state: { posterName: otherUser.name || "Unknown User" } }
+    );
+  };
 
   return (
     <div className="chat-list">
@@ -145,7 +150,7 @@ export default function ChatList() {
         <p>No chats yet.</p>
       ) : (
         chats.map((chat) => {
-          if (!chat?.posterId || !chat?.acceptedUserId) return null;
+          if (!chat?.posterId?._id || !chat?.acceptedUserId?._id) return null;
 
           const otherUser =
             chat.posterId._id.toString() === user._id
@@ -154,7 +159,7 @@ export default function ChatList() {
 
           return (
             <div
-              key={chat._id}
+              key={chat._id || Math.random()}
               className="chat-item"
               onClick={() => handleChatClick(chat)}
             >

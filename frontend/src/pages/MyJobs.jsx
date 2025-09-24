@@ -28,17 +28,19 @@ const MyJobs = ({ onProfileUpdate }) => {
   }, [user]);
 
   // Rating via input + submit
-  const handleRate = async (jobId) => {
+  const handleRate = async (assignedJobId) => {
     try {
-      if (!rating[jobId]) return alert("Please enter a rating between 1-5");
+      const ratingVal = rating[assignedJobId];
+      if (!ratingVal || ratingVal < 1 || ratingVal > 5) {
+        return alert("Please enter a rating between 1-5");
+      }
 
-      await api.post(`/jobs/${jobId}/rate`, { rating: Number(rating[jobId]) });
+      await api.post(`/jobs/${assignedJobId}/rate`, { rating: Number(ratingVal) });
       alert("Rating submitted successfully!");
-      // refresh jobs list
       fetchJobs();
       if (onProfileUpdate) onProfileUpdate();
 
-      setRating((prev) => ({ ...prev, [jobId]: "" }));
+      setRating(prev => ({ ...prev, [assignedJobId]: "" }));
     } catch (err) {
       console.error(err);
       alert("Failed to submit rating");
@@ -55,7 +57,8 @@ const MyJobs = ({ onProfileUpdate }) => {
         return alert("Invalid rating. Must be between 1 and 5.");
       }
 
-      await api.put(`/jobs/${assignedJobId}/rate`, { rating: ratingVal, review });
+      // POST to match backend
+      await api.post(`/jobs/${assignedJobId}/rate`, { rating: ratingVal, review });
       alert("Job rated successfully!");
       fetchJobs();
       if (onProfileUpdate) onProfileUpdate();
@@ -64,6 +67,7 @@ const MyJobs = ({ onProfileUpdate }) => {
       alert(err.response?.data?.message || "Error rating job. Please try again.");
     }
   };
+
 
   if (loading || jobsLoading)
     return <p className="text-center mt-6">Loading your jobs...</p>;
@@ -82,18 +86,20 @@ const MyJobs = ({ onProfileUpdate }) => {
                 <div>
                   <h3>{job.title}</h3>
                   <p>{job.description}</p>
-                  <p>Posted on {new Date(job.createdAt).toLocaleDateString()}</p>
+                  <p>
+                    Posted on {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "N/A"}
+                  </p>
                   <p>
                     <strong>Status:</strong>{" "}
                     {job.status === "pending"
                       ? "Not yet accepted"
                       : job.status === "accepted"
-                      ? `Accepted by ${job.acceptedBy?.name || "someone"}`
-                      : job.status === "completed"
-                      ? "Completed"
-                      : job.status === "rated"
-                      ? "Rated (Completed)"
-                      : "Unknown"}
+                        ? `Accepted by ${job.acceptedBy?.name || "someone"}`
+                        : job.status === "completed"
+                          ? "Completed"
+                          : job.status === "rated"
+                            ? "Rated (Completed)"
+                            : "Unknown"}
                   </p>
                 </div>
                 <div>
@@ -101,30 +107,35 @@ const MyJobs = ({ onProfileUpdate }) => {
                     <>
                       {/* Rate via input + submit */}
                       <div style={{ marginTop: "8px" }}>
-                        <input
-                          type="number"
-                          min="1"
-                          max="5"
-                          placeholder="Rate 1-5"
-                          value={rating[job._id] || ""}
-                          onChange={(e) =>
-                            setRating({ ...rating, [job._id]: e.target.value })
-                          }
-                          style={{ padding: "4px 6px", width: "60px", marginRight: "8px" }}
-                        />
-                        <button
-                          onClick={() => handleRate(job._id)}
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: "6px",
-                            background: "#7c3aed",
-                            color: "#fff",
-                            border: "none",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Submit
-                        </button>
+                        {job.assignedJobId && (
+                          <div style={{ marginTop: "8px" }}>
+                            <input
+                              type="number"
+                              min="1"
+                              max="5"
+                              placeholder="Rate 1-5"
+                              value={rating[job.assignedJobId] || ""}
+                              onChange={(e) =>
+                                setRating({ ...rating, [job.assignedJobId]: e.target.value })
+                              }
+                              style={{ padding: "4px 6px", width: "60px", marginRight: "8px" }}
+                            />
+                            <button
+                              onClick={() => handleRate(job.assignedJobId)}
+                              style={{
+                                padding: "6px 12px",
+                                borderRadius: "6px",
+                                background: "#7c3aed",
+                                color: "#fff",
+                                border: "none",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        )}
+
                       </div>
 
                       {/* Rate via prompt */}
