@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema(
 
     badges: [String],
     jobsPosted: { type: Number, default: 0 } , // ✅ add this
+    jobsAccepted: { type: Number, default: 0 }, // ✅ add this
 
     // Skills & Portfolio
     skills: [{ type: String }],
