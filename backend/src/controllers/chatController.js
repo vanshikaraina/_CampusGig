@@ -1,26 +1,34 @@
-// controllers/chatController.js
 import Chat from "../models/Chat.js";
+import mongoose from "mongoose";
 
 // Get chat messages (filter by jobId at message level)
 export const getChatMessages = async (req, res) => {
   const { posterId, jobId, acceptedUserId } = req.params;
 
   try {
-    // ✅ Find chat between these 2 users (ignore jobId at chat level)
+    // Convert IDs to ObjectId
+    const posterObjId = new mongoose.Types.ObjectId(posterId);
+    const acceptedObjId = new mongoose.Types.ObjectId(acceptedUserId);
+
+    // Find chat between these 2 users
     let chat = await Chat.findOne({
       $or: [
-        { posterId, acceptedUserId },
-        { posterId: acceptedUserId, acceptedUserId: posterId }
+        { posterId: posterObjId, acceptedUserId: acceptedObjId },
+        { posterId: acceptedObjId, acceptedUserId: posterObjId }
       ]
     });
 
+    // If chat doesn't exist, create it
     if (!chat) {
-      // Create chat if it doesn’t exist
-      chat = new Chat({ posterId, acceptedUserId, messages: [] });
+      chat = new Chat({
+        posterId: posterObjId,
+        acceptedUserId: acceptedObjId,
+        messages: []
+      });
       await chat.save();
     }
 
-    // ✅ Filter only messages related to this job
+    // Filter only messages related to this job
     const filteredMessages = chat.messages.filter(
       (msg) => msg.jobId?.toString() === jobId
     );
@@ -41,24 +49,32 @@ export const sendMessage = async (req, res) => {
   }
 
   try {
+    // Convert all IDs to ObjectId
+    const posterObjId = new mongoose.Types.ObjectId(posterId);
+    const acceptedObjId = new mongoose.Types.ObjectId(acceptedUserId);
+    const senderObjId = new mongoose.Types.ObjectId(senderId);
+    const jobObjId = new mongoose.Types.ObjectId(jobId);
+
     let chat = await Chat.findOne({
       $or: [
-        { posterId, acceptedUserId },
-        { posterId: acceptedUserId, acceptedUserId: posterId }
+        { posterId: posterObjId, acceptedUserId: acceptedObjId },
+        { posterId: acceptedObjId, acceptedUserId: posterObjId }
       ]
     });
 
     if (!chat) {
-      // ✅ Ensure IDs are set
-      chat = new Chat({ posterId, acceptedUserId, messages: [] });
+      chat = new Chat({
+        posterId: posterObjId,
+        acceptedUserId: acceptedObjId,
+        messages: []
+      });
     }
 
-    chat.messages.push({ senderId, text, jobId });
+    chat.messages.push({ senderId: senderObjId, text, jobId: jobObjId });
     await chat.save();
 
-    // Return only messages for this job
     const jobMessages = chat.messages.filter(
-      (msg) => msg.jobId.toString() === jobId
+      (msg) => msg.jobId.toString() === jobObjId.toString()
     );
 
     res.status(200).json(jobMessages);
@@ -67,4 +83,3 @@ export const sendMessage = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-

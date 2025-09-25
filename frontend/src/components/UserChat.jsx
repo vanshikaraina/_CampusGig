@@ -1,40 +1,61 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { io } from "socket.io-client";
 import api from "../services/api";
 import "./UserChat.css";
+import { useAuth } from "../context/AuthContext";
 
-export default function UserChat({ currentUserId }) {
+export default function UserChat({ currentUserId: propCurrentUserId }) {
   const { posterId, jobId, acceptedUserId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Get posterName from navigation state
+  const { user } = useAuth();
+  const currentUserId = propCurrentUserId || user?._id;
   const { posterName } = location.state || {};
 
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
-  const messagesEndRef = useRef(null); // For auto-scroll
 
-  // Fetch chat messages
+  const messagesEndRef = useRef(null);
+  const socketRef = useRef();
+
+  // Connect to Socket.IO
   useEffect(() => {
-    if (!acceptedUserId || !posterId || !jobId) {
-      return <p>Chat cannot be loaded. Missing required data.</p>;
-    }
+    if (!posterId || !acceptedUserId || !jobId) return;
+
+    // const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
+    const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
+    socketRef.current = io("http://localhost:5000");
+
+    // Join room
+    socketRef.current.emit("joinRoom", roomId);
+
+    // Listen for new messages
+    socketRef.current.on("newMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => {
+      socketRef.current.emit("leaveRoom", roomId);
+      socketRef.current.disconnect();
+    };
+  }, [posterId, acceptedUserId, jobId, currentUserId]);
+
+  // Fetch initial messages from API
+  useEffect(() => {
+    if (!posterId || !acceptedUserId || !jobId) return;
+
     const fetchMessages = async () => {
       try {
         const res = await api.get(`/chat/${posterId}/${jobId}/${acceptedUserId}`);
         setMessages(res.data);
       } catch (err) {
-        if (err.response && err.response.status === 404) setMessages([]);
-        else console.error("Error fetching chat:", err);
+        console.error("Error fetching chat:", err);
+        setMessages([]);
       }
     };
 
     fetchMessages();
-
-    // Optional: Polling for new messages every 3 seconds
-    const interval = setInterval(fetchMessages, 3000);
-    return () => clearInterval(interval);
   }, [posterId, acceptedUserId, jobId]);
 
   // Auto-scroll to latest message
@@ -42,53 +63,44 @@ export default function UserChat({ currentUserId }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-const handleSend = async () => {
-  if (!newMsg.trim()) return;
-  console.log({ posterId, acceptedUserId, jobId, currentUserId });
+  // Handle input change
+  const handleInputChange = (e) => {
+    setNewMsg(e.target.value);
+  };
 
-  if (!posterId || !acceptedUserId || !jobId || !currentUserId) {
-    return alert("Cannot send message: missing required info.");
-  }
+  // Send message
+  const handleSend = () => {
+    if (!newMsg.trim()) return;
 
-  try {
-    const res = await api.post("/chat", {
-      posterId: posterId.toString(),
-      acceptedUserId: acceptedUserId.toString(),
-      jobId: jobId.toString(),
-      senderId: currentUserId.toString(),
+    const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
+    const msgData = {
+      posterId,
+      acceptedUserId,
+      jobId,
+      senderId: currentUserId,
       text: newMsg.trim(),
-    });
-    setMessages(res.data);
-    setNewMsg("");
-  } catch (err) {
-    console.error("Error sending message:", err);
-    alert(err.response?.data?.message || "Failed to send message");
-  }
-};
+    };
 
+    // Emit to server
+    socketRef.current.emit("sendMessage", msgData);
+
+    // Update local state immediately
+    setMessages((prev) => [...prev, { ...msgData, _id: Date.now() }]); // temp ID
+    setNewMsg("");
+  };
 
   return (
     <div className="user-chat">
       {/* Header */}
       <div className="chat-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          ←
-        </button>
+        <button className="back-btn" onClick={() => navigate(-1)}>←</button>
         Chat with {posterName || (acceptedUserId === currentUserId ? posterId : acceptedUserId)}
       </div>
-
-      {/* <div className="chat-header"a>
-        Chat with {posterName || (acceptedUserId === currentUserId ? posterId : acceptedUserId)} */}
-        {/* <button onClick={() => navigate(-1)}>X</button> */}
-      {/* </div> */}
 
       {/* Messages */}
       <div className="chat-body">
         {messages.map((m, idx) => (
-          <div
-            key={idx}
-            className={`chat-msg ${m.senderId === currentUserId ? "me" : "them"}`}
-          >
+          <div key={idx} className={`chat-msg ${m.senderId === currentUserId ? "me" : "them"}`}>
             {m.text}
           </div>
         ))}
@@ -100,7 +112,7 @@ const handleSend = async () => {
         <input
           type="text"
           value={newMsg}
-          onChange={(e) => setNewMsg(e.target.value)}
+          onChange={handleInputChange}
           placeholder="Type a message..."
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
