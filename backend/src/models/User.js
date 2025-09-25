@@ -40,7 +40,9 @@ const userSchema = new mongoose.Schema(
     profilePic: { type: String, default: "" },
 
     // Ratings & Badges
-    rating: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 },   // average rating
+    ratings: [{ type: Number, default: [] }] ,// store all ratings
+
     badges: [String],
     jobsPosted: { type: Number, default: 0 } , // ✅ add this
 
@@ -69,10 +71,6 @@ const userSchema = new mongoose.Schema(
       linkedin: { type: String },
       email: { type: String }
     },
-
-    // Ratings & Badges
-    // rating: { type: Number, default: 0 },
-    // badges: [String]
   },
   { timestamps: true }
 );

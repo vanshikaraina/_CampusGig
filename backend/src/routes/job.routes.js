@@ -3,6 +3,7 @@ import Job from "../models/Jobs.js";
 import AssignedJob from "../models/AssignedJob.js";
 import { auth } from "../middleware/auth.middleware.js";
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -98,21 +99,25 @@ router.put("/:id/complete", auth, async (req, res) => {
 router.post("/:id/rate", auth, async (req, res) => {
   try {
     const { rating, review } = req.body;
+
     const assignedJob = await AssignedJob.findById(req.params.id);
     if (!assignedJob) return res.status(404).json({ message: "Job not found" });
-    if (assignedJob.status !== "completed") return res.status(400).json({ message: "Job not completed yet" });
+    if (assignedJob.status !== "completed")
+      return res.status(400).json({ message: "Job not completed yet" });
 
-    assignedJob.rating = rating; // ✅ rating field
-    assignedJob.review = review; // ✅ review field
-    assignedJob.status = "rated"; // ✅ status enum update
+    // Update assigned job
+    assignedJob.rating = rating;
+    assignedJob.review = review;
+    assignedJob.status = "rated";
     await assignedJob.save();
 
-    // Update freelancer's average rating
+    // Update freelancer's ratings
     const user = await User.findById(assignedJob.student);
     if (user) {
-      const ratings = user.ratings || [];
-      ratings.push(rating);
-      user.rating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+      // Ensure ratings array exists
+      user.ratings = user.ratings || [];
+      user.ratings.push(rating);  // Add new rating
+      user.rating = user.ratings.reduce((a, b) => a + b, 0) / user.ratings.length; // Average
       await user.save();
     }
 
@@ -121,6 +126,7 @@ router.post("/:id/rate", auth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ------------------- Get Accepted Jobs for Current User -------------------
 router.get("/accepted", auth, async (req, res) => {
