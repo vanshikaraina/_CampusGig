@@ -61,41 +61,41 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="landing-footer">
-      <div className="footer-container">
-        <div className="footer-section">
-          <h3>About CampusGig</h3>
-          <p>
-            Empowering students and freelancers to showcase their skills,
-            find projects, and grow professionally.
-          </p>
-        </div>
+        <div className="footer-container">
+          <div className="footer-section">
+            <h3>About CampusGig</h3>
+            <p>
+              Empowering students and freelancers to showcase their skills,
+              find projects, and grow professionally.
+            </p>
+          </div>
 
-        <div className="footer-section">
-          <h3>Quick Links</h3>
-          <ul>
-            <li><a href="/jobs">All Jobs</a></li>
-            <li><a href="/post-job">Post a Job</a></li>
-            <li><a href="/signup">Sign Up</a></li>
-            <li><a href="/login">Login</a></li>
-          </ul>
-        </div>
+          <div className="footer-section">
+            <h3>Quick Links</h3>
+            <ul>
+              <li><a href="/jobs">All Jobs</a></li>
+              <li><a href="/post-job">Post a Job</a></li>
+              <li><a href="/signup">Sign Up</a></li>
+              <li><a href="/login">Login</a></li>
+            </ul>
+          </div>
 
-        <div className="footer-section">
-          <h3>Contact Us</h3>
-          <p>Email: support@campusgig.com</p>
-          <p>Phone: +91 98765 43210</p>
-          <div className="socials">
-            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <div className="footer-section">
+            <h3>Contact Us</h3>
+            <p>Email: support@campusgig.com</p>
+            <p>Phone: +91 98765 43210</p>
+            <div className="socials">
+              <a href="#">LinkedIn</a>
+              <a href="#">Instagram</a>
+              <a href="#">Twitter</a>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="footer-bottom">
-        <p>&copy; 2025 CampusGig. All rights reserved.</p>
-      </div>
-    </footer>
+        <div className="footer-bottom">
+          <p>&copy; 2025 CampusGig. All rights reserved.</p>
+        </div>
+      </footer>
 
     </div>
   );
