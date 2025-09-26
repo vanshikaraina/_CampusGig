@@ -78,7 +78,7 @@ export default function App() {
         {/* Navbar always visible */}
         <Navbar />
 
-        <div style={{ paddingTop: "80px" }}>
+        <div style={{ paddingTop: "64px" }}>
           <Routes>
             <Route path="/" element={<Landing />} />           {/* Landing page */}
             <Route path="/jobs" element={<JobsList />} />     {/* Jobs list page */}
