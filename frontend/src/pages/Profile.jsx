@@ -37,10 +37,9 @@ const Profile = () => {
   const pieData = [
     { name: "Jobs Posted", value: user?.jobsPosted || 0 },
     { name: "Jobs Accepted", value: user?.jobsAccepted || 0 },
-    { name: "Earnings (₹)", value: user?.earnings || 0 },
   ];
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
+  const COLORS = ["#0088FE", "#00C49F"];
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -161,6 +160,16 @@ const Profile = () => {
               saveProfile();
             }}
           >
+            {/* Avatar Picker */}
+      {editMode && showSelector && (
+        <ProfilePicSelector
+          onSelect={(id) => {
+            setProfilePic(id); // store selected avatar ID
+            setUser({ ...user, profilePic: id });
+            setShowSelector(false);
+          }}
+        />
+      )}
             <div className="form-group">
               <label htmlFor="name">Name</label>
               <input
@@ -384,16 +393,6 @@ const Profile = () => {
           </PieChart>
         </ResponsiveContainer>
       </div>
-      {/* Avatar Picker */}
-      {editMode && showSelector && (
-        <ProfilePicSelector
-          onSelect={(id) => {
-            setProfilePic(id); // store selected avatar ID
-            setUser({ ...user, profilePic: id });
-            setShowSelector(false);
-          }}
-        />
-      )}
 
       {/* Skills */}
       <div className="profile-section">

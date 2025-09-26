@@ -352,3 +352,104 @@
   font-size: 1rem;
   opacity: 0.9;
 }
+
+/* avatars */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 avatars per row */
+  gap: 16px; /* space between avatars */
+  justify-items: center; /* center each avatar in its grid cell */
+  margin-top: 16px;
+}
+
+.avatar-card {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border 0.2s;
+}
+
+.avatar-card.selected {
+  border-color: #7c3aed; /* highlight selected avatar */
+}
+
+
+/* ===============================
+   Responsive Styles
+================================= */
+@media (max-width: 1024px) {
+  .profile-container {
+    width: 90%;
+    padding: 30px;
+  }
+
+  .profile-edit-form input,
+  .profile-edit-form textarea {
+    width: 100% !important;  /* override fixed width */
+    max-width: 100%;         /* prevent overflow */
+    box-sizing: border-box;  /* include padding in width */
+  }
+
+  .portfolio-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-header h2 {
+    font-size: 28px;
+  }
+
+  .profile-header p {
+    font-size: 16px;
+  }
+
+  .bio {
+    font-size: 16px;
+  }
+
+  .profile-stats {
+    grid-template-columns: repeat(2, 1fr); /* 2 stat cards per row */
+  }
+
+  .avatar-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 avatars per row on tablets */
+  }
+
+  .profile-edit-form input,
+  .profile-edit-form textarea {
+    width: 100% !important;  /* override fixed width */
+    max-width: 100%;         /* prevent overflow */
+    box-sizing: border-box;  /* include padding in width */
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header {
+    padding: 15px;
+  }
+
+  .profile-header h2 {
+    font-size: 22px;
+  }
+
+  .profile-header p,
+  .bio {
+    font-size: 14px;
+  }
+
+  .profile-stats {
+    grid-template-columns: 1fr; /* 1 stat card per row on mobile */
+  }
+
+  .avatar-grid {
+    grid-template-columns: 1fr; /* 1 avatar per row */
+    gap: 12px;
+  }
+
+  .profile-edit-form {
+    padding: 15px;
+  }
+}
