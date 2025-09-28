@@ -7,6 +7,16 @@ export default function JobsList({ setUser }) {  // ✅ accept setUser prop
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1); // force re-render every 60s
+    }, 60000); // 60,000ms = 1 min
+
+    return () => clearInterval(interval); // cleanup
+  }, []);
+
 
   // Fetch jobs whenever search or roleFilter changes
   useEffect(() => {
@@ -67,6 +77,26 @@ export default function JobsList({ setUser }) {  // ✅ accept setUser prop
     }
   };
 
+    const timeLeft = (deadline) => {
+    if (!deadline) return "No deadline";
+
+    const now = new Date();
+    const end = new Date(deadline);
+    const diffMs = end - now;
+
+    if (diffMs <= 0) return "Expired";
+
+    const seconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d left`;
+    if (hours > 0) return `${hours}h left`;
+    if (minutes > 0) return `${minutes}m left`;
+    return "Less than a minute left";
+  };
+
   return (
     <div className="jobs-list">
       <h2>Available Jobs</h2>
@@ -101,6 +131,7 @@ export default function JobsList({ setUser }) {  // ✅ accept setUser prop
         <ul>
           {jobs.map((job) => (
             <li key={job._id} className="job-card">
+              <span className="job-time">{timeLeft(job.deadline)}</span>
               <h3>{job.title}</h3>
               <p>{job.description}</p>
               <p>
