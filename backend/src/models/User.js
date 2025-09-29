@@ -47,6 +47,9 @@ const userSchema = new mongoose.Schema(
     jobsPosted: { type: Number, default: 0 } , // ✅ add this
     jobsAccepted: { type: Number, default: 0 }, // ✅ add this
 
+    // 👇 Add this field for passed jobs
+    passedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
+
     // Skills & Portfolio
     skills: [{ type: String }],
     portfolio: [
