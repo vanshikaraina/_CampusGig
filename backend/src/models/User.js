@@ -56,7 +56,8 @@ const userSchema = new mongoose.Schema(
       {
         title: { type: String },
         img: { type: String },
-        link: { type: String }
+        link: { type: String },
+        createdAt: { type: Date, default: Date.now }
       }
     ],
 

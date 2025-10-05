@@ -1,59 +1,3 @@
-// //frontend
-
-// //app.jsx
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import { AuthProvider , useAuth } from "./context/AuthContext";
-// import Signup from "./pages/Signup.jsx";
-// import Login from "./pages/Login.jsx";
-// import AcceptedJobsDashboard from "./pages/AcceptedJobsDashboard"; // import accepted jobs dashboard
-// import Dashboard from "./pages/Dashboard.jsx";
-// import Navbar from "./pages/Navbar.jsx"; // ✅ import Navbar
-// import Profile from "./pages/Profile";
-// import JobsList from "./pages/jobsList";
-// import PostJob from "./pages/PostJobs.jsx"; 
-// import ChatWidget from "./components/ChatWidget.jsx";
-// import UserChat from "./components/UserChat.jsx";
-
-// // inside Routes
-
-// export default function App() {
-//     // ✅ Step 2: get the current user from AuthContext
-//   const { user, loading } = useAuth();
-//   const currentUserId = user?._id; // adjust if your user object uses 'id' instead of '_id'
-
-//   if (loading) return <div>Loading...</div>; // optional: wait for auth to load
-
-
-//   return (
-//         <AuthProvider>
-//     <BrowserRouter>
-//       {/* ✅ Navbar at the top */}
-//       <Navbar />  
-
-//       <div style={{ paddingTop: "80px" }}>
-//   <Routes>
-//     <Route path="/" element={<JobsList />} />
-//     <Route path="/accepted-jobs" element={<AcceptedJobsDashboard />} /> Accepted jobs dashboard
-//     <Route path="/post-job" element={<PostJob />} />
-//     <Route path="/profile" element={<Profile />} />
-//     <Route path="/signup" element={<Signup />} />
-//     <Route path="/login" element={<Login />} />
-//     <Route path="/dashboard" element={<Dashboard />} />
-//     <Route
-//       path="/chat/:posterId/:jobId/:acceptedUserId"
-//       element={<UserChat currentUserId={currentUserId} />}
-//     />
-//     {/* <Route path="/" element={<h1 style={{ textAlign: "center", marginTop: "40px", color: "#7c3aed" }}>Welcome to CampusGig</h1>} /> */}
-    
-//   </Routes>
-// </div>
-//     <ChatWidget /> {/* ✅ appears on all screens */}
-//     </BrowserRouter>
-//     </AuthProvider>
-//   );
-// }
-
-
 // frontend/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -70,6 +14,8 @@ import ChatWidget from "./components/ChatWidget.jsx";
 import UserChat from "./components/UserChat.jsx";
 import ChatList from "./components/ChatList.jsx";
 import MyJobs from "./pages/MyJobs.jsx";
+import JobBids from "./pages/JobBids";
+import Portfolio from "./pages/Portfolio.jsx";
 
 export default function App() {
   return (
@@ -90,6 +36,8 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/jobs/:jobId/bids" element={<JobBids />} />
+            <Route path="/portfolio/:userId" element={<Portfolio />} />
 
             {/* Full-page chat route */}
             <Route

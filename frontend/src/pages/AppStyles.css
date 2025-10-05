@@ -183,6 +183,58 @@ body {
 .signup-btn:hover {
   background: #6d28d9;
 }
+
+.profile-dropdown {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.profile-text {
+  font-weight: 500;
+  color: #374151;
+  transition: color 0.2s;
+}
+
+.profile-text:hover {
+  color: #7c3aed;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #fff;
+  min-width: 160px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  z-index: 1000;
+  flex-direction: column;
+}
+
+.profile-dropdown:hover .dropdown-content {
+  display: flex;
+}
+
+.dropdown-content a,
+.dropdown-content button {
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dropdown-content a:hover,
+.dropdown-content button:hover {
+  background-color: #f3f4f6;
+  color: #7c3aed;
+}
+
 /* AppStyles.cs
 mai ye update krde */
 .form input,
@@ -639,3 +691,4 @@ mai ye update krde */
     margin-left: 0;
   }
 }
+

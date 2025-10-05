@@ -253,10 +253,108 @@ import Job from "../models/Jobs.js";
 import AssignedJob from "../models/AssignedJob.js";
 import { auth } from "../middleware/auth.middleware.js";
 import User from "../models/User.js";
+import Bid from "../models/Bid.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 const router = express.Router();
+
+/**
+ * ------------------- Place a Bid -------------------
+ */
+router.post("/:id/bid", auth, async (req, res) => {
+  try {
+    const { bidAmount } = req.body;
+    if (!bidAmount) return res.status(400).json({ message: "Bid amount required" });
+
+    // Ensure max 5 bids per job
+    const bidCount = await Bid.countDocuments({ job: req.params.id });
+    if (bidCount >= 5) {
+      return res.status(400).json({ message: "Maximum bids reached for this job" });
+    }
+
+    const bid = await Bid.create({
+      job: req.params.id,
+      student: req.user._id,
+      bidAmount,
+    });
+
+    res.status(201).json({ message: "Bid placed successfully", bid });
+  } catch (err) {
+    console.error("Error placing bid:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * ------------------- Get all bids for a job (poster only) -------------------
+ */
+router.get("/:id/bids", auth, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    if (String(job.postedBy) !== String(req.user._id)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const bids = await Bid.find({ job: req.params.id })
+      .populate("student", "name email rating")
+      .sort({ bidAmount: 1 });
+
+    res.json(bids);
+  } catch (err) {
+    console.error("Error fetching bids:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * ------------------- Select a Winning Bid -------------------
+ */
+// ------------------- Select a Winning Bid -------------------
+router.put("/:jobId/select/:bidId", auth, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    if (String(job.postedBy) !== String(req.user._id)) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    const bid = await Bid.findById(req.params.bidId).populate("student");
+    if (!bid) return res.status(404).json({ message: "Bid not found" });
+
+    // ✅ Mark this bid as accepted
+    bid.status = "accepted";
+    await bid.save();
+
+    // ✅ Mark others as rejected
+    await Bid.updateMany(
+      { job: req.params.jobId, _id: { $ne: req.params.bidId } },
+      { $set: { status: "rejected" } }
+    );
+
+    // ✅ Update the job to mark it accepted
+    job.acceptedBy = bid.student._id;
+    await job.save();
+
+    // ✅ Create an AssignedJob
+    const assignedJob = await AssignedJob.create({
+      job: job._id,
+      student: bid.student._id,
+      jobTitle: job.title,
+      studentName: bid.student.name,
+      studentEmail: bid.student.email,
+      status: "accepted",
+    });
+
+    res.json({ message: "Bid selected and job assigned", assignedJob });
+  } catch (err) {
+    console.error("Error selecting bid:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ------------------- Create a Job -------------------
 router.post("/", auth, async (req, res) => {

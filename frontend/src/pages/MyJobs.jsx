@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Navbar from "./Navbar";
 import { useAuth } from "../context/AuthContext";
@@ -9,6 +10,7 @@ const MyJobs = ({ onProfileUpdate }) => {
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [rating, setRating] = useState({}); // track rating input for each job
+  const navigate = useNavigate();
 
   // Fetch jobs
   const fetchJobs = async () => {
@@ -102,6 +104,18 @@ const MyJobs = ({ onProfileUpdate }) => {
                             : "Unknown"}
                   </p>
                 </div>
+
+                {/* View Bids Button */}
+                <div style={{ marginTop: "10px" }}>
+                  <button
+                    className="btn-accept"
+                    onClick={() => navigate(`/jobs/${job._id}/bids`)}
+                  >
+                    View Bids
+                  </button>
+                </div>
+
+                {/* Rating Section */}
                 <div>
                   {job.acceptedBy && job.status === "completed" && (
                     <>
@@ -135,7 +149,6 @@ const MyJobs = ({ onProfileUpdate }) => {
                             </button>
                           </div>
                         )}
-
                       </div>
 
                       {/* Rate via prompt */}
@@ -152,6 +165,7 @@ const MyJobs = ({ onProfileUpdate }) => {
                   )}
                 </div>
               </li>
+
             ))}
           </ul>
         )}
