@@ -172,7 +172,7 @@ export default function AcceptedJobs() {
 
                 <div className="job-buttons">
                   {/* Portfolio Button */}
-                  <button className="btn-portfolio" onClick={() => navigate(`/portfolio/${student?._id}`)}>
+                  <button className="btn-portfolio" onClick={() => navigate(`/portfolio/${postedBy?._id}`)}>
                     View Portfolio
                   </button>
                   <button

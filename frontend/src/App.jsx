@@ -37,6 +37,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/jobs/:jobId/bids" element={<JobBids />} />
+            <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/portfolio/:userId" element={<Portfolio />} />
 
             {/* Full-page chat route */}
