@@ -33,7 +33,7 @@ const Profile = () => {
         setLoading(false);
       });
   }, []);
-  
+
   const pieData = [
     { name: "Jobs Posted", value: user?.jobsPosted || 0 },
     { name: "Jobs Accepted", value: user?.jobsAccepted || 0 },
@@ -161,15 +161,15 @@ const Profile = () => {
             }}
           >
             {/* Avatar Picker */}
-      {editMode && showSelector && (
-        <ProfilePicSelector
-          onSelect={(id) => {
-            setProfilePic(id); // store selected avatar ID
-            setUser({ ...user, profilePic: id });
-            setShowSelector(false);
-          }}
-        />
-      )}
+            {editMode && showSelector && (
+              <ProfilePicSelector
+                onSelect={(id) => {
+                  setProfilePic(id); // store selected avatar ID
+                  setUser({ ...user, profilePic: id });
+                  setShowSelector(false);
+                }}
+              />
+            )}
             <div className="form-group">
               <label htmlFor="name">Name</label>
               <input
@@ -352,24 +352,24 @@ const Profile = () => {
           </>
         )}
       </div>
-<div className="profile-stats">
-  <div className="stat-card">
-    <h3>{user.jobsPosted || 0}</h3>
-    <p>Jobs Posted</p>
-  </div>
-  <div className="stat-card">
-    <h3>{user.jobsAccepted || 0}</h3>
-    <p>Jobs Accepted</p>
-  </div>
-  <div className="stat-card">
-    <h3>₹{user.earnings || 0}</h3>
-    <p>Total Earnings</p>
-  </div>
-  <div className="stat-card">
-    <h3>{typeof user.rating === "number" ? user.rating.toFixed(1) : "—"}⭐</h3>
-    <p>Rating</p>
-  </div>
-</div>
+      <div className="profile-stats">
+        <div className="stat-card">
+          <h3>{user.jobsPosted || 0}</h3>
+          <p>Jobs Posted</p>
+        </div>
+        <div className="stat-card">
+          <h3>{user.jobsAccepted || 0}</h3>
+          <p>Jobs Accepted</p>
+        </div>
+        <div className="stat-card">
+          <h3>₹{user.earnings || 0}</h3>
+          <p>Total Earnings</p>
+        </div>
+        <div className="stat-card">
+          <h3>{typeof user.rating === "number" ? user.rating.toFixed(1) : "—"}⭐</h3>
+          <p>Rating</p>
+        </div>
+      </div>
 
       {/* ✅ Pie Chart Section */}
       <div className="profile-section">
@@ -489,8 +489,6 @@ const Profile = () => {
           </div>
         </div>
       </div>
-
-
     </div>
   );
 };

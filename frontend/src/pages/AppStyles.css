@@ -237,25 +237,16 @@ body {
 
 /* AppStyles.cs
 mai ye update krde */
-.form input,
-.form select {
-  padding: 12px;
-  font-size: 15px;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 6px;
-  background: #f8fafc;
-  transition: 0.2s;
-  color: black;
-}
-/* Post Job form wrapper (same style as login) */
+/* Form wrapper */
 .post-job-container {
-  max-width: 420px;
-  margin: 80px auto;
+  max-width: 480px;
+  margin: 60px auto;
   padding: 35px 30px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   text-align: center;
+  box-sizing: border-box;
 }
 
 /* Title */
@@ -266,22 +257,21 @@ mai ye update krde */
   color: #7c3aed;
 }
 
-/* Inputs */
+/* Inputs & textarea */
 .post-job-container input,
 .post-job-container textarea {
-  width: 350px;
-  /* margin-right: 50px; */
+  width: 100%;
   padding: 12px 14px;
   margin-bottom: 15px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   font-size: 15px;
   background: #f9fafb;
-  transition: all 0.3s ease;
   color: #374151;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
-/* Focus glow */
 .post-job-container input:focus,
 .post-job-container textarea:focus {
   border-color: #a855f7;
@@ -290,14 +280,73 @@ mai ye update krde */
   outline: none;
 }
 
-/* Textarea */
 .post-job-container textarea {
   resize: vertical;
   min-height: 100px;
 }
 
+/* Skills section */
+.skills-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.skills-input {
+  flex: 1;
+  min-width: 0; /* allows flex shrink */
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.skills-add-btn {
+  padding: 10px 14px;
+  border: 1px solid #111827;
+  background: #fff;
+  color: #111827;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skills-add-btn:hover {
+  background: #111827;
+  color: #fff;
+}
+
+.skill-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f3f4f6;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.skill-trash {
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.skill-trash:hover {
+  color: #ef4444;
+}
+
 /* Submit button */
-.post-job-container button {
+.post-job-btn {
   width: 100%;
   padding: 12px;
   border: none;
@@ -310,10 +359,11 @@ mai ye update krde */
   transition: all 0.3s ease;
 }
 
-.post-job-container button:hover {
+.post-job-btn:hover {
   opacity: 0.9;
   transform: translateY(-2px);
 }
+
 
 /* ================= JOBS LIST STYLING ================= */
 

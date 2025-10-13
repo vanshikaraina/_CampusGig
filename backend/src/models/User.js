@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema(
     passedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
 
     // Skills & Portfolio
-    skills: [{ type: String }],
+    skills: { type: [String], default: [] },
     portfolio: [
       {
         title: { type: String },

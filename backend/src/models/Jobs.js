@@ -6,6 +6,7 @@ const jobSchema = new mongoose.Schema({
   title: String,
   description: String,
   category: String,
+  skills: [String], // ✅ new field for required skills
   price: Number,
   deadline: Date,
   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
