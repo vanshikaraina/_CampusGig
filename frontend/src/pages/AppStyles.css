@@ -742,3 +742,35 @@ mai ye update krde */
   }
 }
 
+/* Container for sort dropdown */
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+/* Label for sorting */
+.sort-container label {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Select dropdown styling */
+.sort-select {
+  padding: 6px 10px;
+  color: black;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}

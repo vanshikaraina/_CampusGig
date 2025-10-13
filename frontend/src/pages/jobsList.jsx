@@ -155,7 +155,6 @@
 //     </div>
 //   );
 // }
-
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./AppStyles.css";
@@ -167,6 +166,7 @@ export default function JobsList({ user, setUser }) {
   const [roleFilter, setRoleFilter] = useState("");
   const [tick, setTick] = useState(0);
   const [currentUser, setCurrentUser] = useState(user || null);
+  const [sortOrder, setSortOrder] = useState(""); // "high" or "low"
 
   // Force re-render every 60s
   useEffect(() => {
@@ -263,26 +263,48 @@ export default function JobsList({ user, setUser }) {
   };
 
   // Filter out expired jobs
-  const validJobs = jobs.filter((job) => !job.deadline || new Date(job.deadline) > new Date());
+  const validJobs = jobs.filter(
+    (job) => !job.deadline || new Date(job.deadline) > new Date()
+  );
 
   // Normalize skills
   const normalizeSkill = (skill) =>
     skill.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
 
-  // Recommended jobs
+  // Recommended jobs (sorted by number of matching skills)
   const recommendedJobs =
     currentUser?.skills?.length > 0
-      ? validJobs.filter((job) => {
-        if (!job?.skills?.length) return false;
-        const userSkills = currentUser.skills.map(normalizeSkill);
-        const jobSkills = job.skills.map(normalizeSkill);
-        // only exact matches
-        return jobSkills.some((js) => userSkills.includes(js));
-      })
+      ? validJobs
+          .map((job) => {
+            if (!job?.skills?.length) return null;
+
+            const userSkills = currentUser.skills.map(normalizeSkill);
+            const jobSkills = job.skills.map(normalizeSkill);
+
+            // Count matching skills
+            const matchCount = jobSkills.filter((js) =>
+              userSkills.includes(js)
+            ).length;
+
+            return matchCount > 0 ? { ...job, matchCount } : null;
+          })
+          .filter(Boolean)
+          // Sort jobs with more matches first
+          .sort((a, b) => b.matchCount - a.matchCount)
       : [];
-      
+
   // Other jobs
   const allJobs = validJobs.filter((job) => !recommendedJobs.includes(job));
+
+  // Sorting logic for price
+  const sortJobs = (jobs) => {
+    if (sortOrder === "high") return [...jobs].sort((a, b) => b.price - a.price);
+    if (sortOrder === "low") return [...jobs].sort((a, b) => a.price - b.price);
+    return jobs;
+  };
+
+  const sortedRecommendedJobs = sortJobs(recommendedJobs);
+  const sortedAllJobs = sortJobs(allJobs);
 
   const renderJobCard = (job) => (
     <li key={job._id} className="job-card">
@@ -301,7 +323,9 @@ export default function JobsList({ user, setUser }) {
       </p>
       <p>
         <strong>Deadline:</strong>{" "}
-        {job.deadline ? new Date(job.deadline).toLocaleDateString() : "No deadline"}
+        {job.deadline
+          ? new Date(job.deadline).toLocaleDateString()
+          : "No deadline"}
       </p>
       <p>
         <strong>Posted by:</strong> {job.postedBy?.name || "Anonymous"}
@@ -315,18 +339,32 @@ export default function JobsList({ user, setUser }) {
 
   return (
     <div className="jobs-list">
+      {/* Sorting Dropdown */}
+      <div className="sort-container">
+        <label>Sort by Price: </label>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="sort-select"
+        >
+          <option value="">Default</option>
+          <option value="high">High to Low</option>
+          <option value="low">Low to High</option>
+        </select>
+      </div>
+
       <h2>Recommended Jobs</h2>
-      {recommendedJobs.length === 0 ? (
+      {sortedRecommendedJobs.length === 0 ? (
         <p>No recommended jobs based on your skills.</p>
       ) : (
-        <ul>{recommendedJobs.map(renderJobCard)}</ul>
+        <ul>{sortedRecommendedJobs.map(renderJobCard)}</ul>
       )}
 
       <h2>All Jobs</h2>
-      {allJobs.length === 0 ? (
+      {sortedAllJobs.length === 0 ? (
         <p>No other jobs available right now.</p>
       ) : (
-        <ul>{allJobs.map(renderJobCard)}</ul>
+        <ul>{sortedAllJobs.map(renderJobCard)}</ul>
       )}
     </div>
   );
