@@ -6,6 +6,7 @@ import { FaGithub, FaLinkedin, FaEnvelope, FaEdit, FaPlus, FaTrash } from "react
 import Lottie from "lottie-react";
 import ProfilePicSelector, { avatarsMap } from "../components/ProfilePicSelector";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -16,8 +17,16 @@ const Profile = () => {
   const [error, setError] = useState("");
   const [newSkill, setNewSkill] = useState("");
   const [newTask, setNewTask] = useState({ title: "", status: "" });
-  const [newPortfolio, setNewPortfolio] = useState({ title: "", link: "", file: null });
+  // const [newPortfolio, setNewPortfolio] = useState({ title: "", link: "", file: null });
+  const [portfolioProjects, setPortfolioProjects] = useState([]);
 
+  useEffect(() => {
+    if (!user?._id) return;
+    axios
+      .get(`http://localhost:5000/api/portfolio/${user._id}`)
+      .then((res) => setPortfolioProjects(res.data.projects || []))
+      .catch((err) => console.error("Error fetching portfolio:", err));
+  }, [user]);
 
   useEffect(() => {
     axios
@@ -46,8 +55,8 @@ const Profile = () => {
     if (name.startsWith("contacts.")) {
       const key = name.split(".")[1];
       setUser({ ...user, contacts: { ...user.contacts, [key]: value } || { [key]: value } });
-    } else if (name === "portfolioFile") {
-      setNewPortfolio({ ...newPortfolio, file: files[0] });
+    // } else if (name === "portfolioFile") {
+    //   setNewPortfolio({ ...newPortfolio, file: files[0] });
     } else {
       setUser({ ...user, [name]: value });
     }
@@ -76,22 +85,22 @@ const Profile = () => {
   };
 
   // Add portfolio
-  const addPortfolio = () => {
-    if (!newPortfolio.title || (!newPortfolio.link && !newPortfolio.file)) return;
+  // const addPortfolio = () => {
+  //   if (!newPortfolio.title || (!newPortfolio.link && !newPortfolio.file)) return;
 
-    const portfolioItem = {
-      title: newPortfolio.title,
-      link: newPortfolio.link || URL.createObjectURL(newPortfolio.file),
-      fileName: newPortfolio.file?.name || null,
-    };
+  //   const portfolioItem = {
+  //     title: newPortfolio.title,
+  //     link: newPortfolio.link || URL.createObjectURL(newPortfolio.file),
+  //     fileName: newPortfolio.file?.name || null,
+  //   };
 
-    setUser({ ...user, portfolio: [...(user.portfolio || []), portfolioItem] });
-    setNewPortfolio({ title: "", link: "", file: null });
-  };
+  //   setUser({ ...user, portfolio: [...(user.portfolio || []), portfolioItem] });
+  //   setNewPortfolio({ title: "", link: "", file: null });
+  // };
 
-  const removePortfolio = (idx) => {
-    setUser({ ...user, portfolio: user.portfolio.filter((_, i) => i !== idx) });
-  };
+  // const removePortfolio = (idx) => {
+  //   setUser({ ...user, portfolio: user.portfolio.filter((_, i) => i !== idx) });
+  // };
 
   const saveProfile = () => {
     // ensure profilePic is string
@@ -267,7 +276,7 @@ const Profile = () => {
             </div>
 
             {/* Portfolio */}
-            <div className="form-group">
+            {/* <div className="form-group">
               <label>Portfolio</label>
               <ul>
                 {(user.portfolio || []).map((p, idx) => (
@@ -295,7 +304,36 @@ const Profile = () => {
               <button type="button" onClick={addPortfolio}>
                 Add Portfolio
               </button>
-            </div>
+            </div> */}
+            {/* Portfolio Section */}
+{/* Portfolio Section */}
+<div className="profile-section">
+  <h3>Portfolio</h3>
+
+  {/* Message above portfolios */}
+  <p style={{ marginBottom: "1rem", color: "#555" ,  fontSize: "0.8rem" }}>
+    To add a new portfolio, please navigate to the Portfolio Page.
+  </p>
+
+  {/* Portfolio grid */}
+  <div className="portfolio-grid">
+    {portfolioProjects.length > 0 ? (
+      portfolioProjects.map((proj, idx) => (
+        <a
+          key={idx}
+          href={proj.link || `http://localhost:5000${proj.fileUrl}`}
+          target="_blank"
+          rel="noreferrer"
+          className="portfolio-card"
+        >
+          <p>{proj.title}</p>
+        </a>
+      ))
+    ) : (
+      <p>No portfolio added yet.</p>
+    )}
+  </div>
+</div>
 
             {/* Contacts */}
             <div className="form-group">
@@ -426,20 +464,21 @@ const Profile = () => {
       <div className="profile-section">
         <h3>Portfolio</h3>
         <div className="portfolio-grid">
-          {user.portfolio && user.portfolio.length > 0
-            ? user.portfolio.map((proj, idx) => (
+          {portfolioProjects.length > 0 ? (
+            portfolioProjects.map((proj, idx) => (
               <a
                 key={idx}
-                href={proj.link}
+                href={proj.link || `http://localhost:5000${proj.fileUrl}`}
                 target="_blank"
                 rel="noreferrer"
                 className="portfolio-card"
               >
-                {/* <img src={"https://tse3.mm.bing.net/th/id/OIP.o5RKxFmuMldCHJS03SWeqQAAAA?pid=Api&P=0&h=180"} alt={proj.title} /> */}
                 <p>{proj.title}</p>
               </a>
             ))
-            : "No portfolio added yet"}
+          ) : (
+            <p>No portfolio added yet.</p>
+          )}
         </div>
       </div>
 
