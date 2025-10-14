@@ -94,7 +94,13 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
       {/* Header */}
       <div className="chat-header">
         <button className="back-btn" onClick={() => navigate(-1)}>←</button>
-        Chat with {posterName || (acceptedUserId === currentUserId ? posterId : acceptedUserId)}
+        {(() => {
+          // Determine who the other person is
+          const otherUserId = currentUserId === posterId ? acceptedUserId : posterId;
+
+          // Display other person's name if available, otherwise ID
+          return <span>Chat with {posterName || otherUserId}</span>;
+        })()}
       </div>
 
       {/* Messages */}
