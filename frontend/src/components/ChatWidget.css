@@ -39,34 +39,53 @@
   padding: 12px;
   font-weight: bold;
   text-align: center;
+  position: relative;
+}
+
+.chat-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
 .chat-messages {
   flex: 1;
   padding: 10px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
+/* General message bubble */
 .chat-msg {
   margin: 5px 0;
   padding: 8px 12px;
   border-radius: 15px;
-  max-width: 80%;
+  max-width: 70%;        /* max width relative to chat window */
   word-wrap: break-word;
+  display: inline-block;  /* bubble width adapts to content */
 }
 
+/* Bot messages - left aligned */
 .chat-msg.bot {
   background: #f3f4f6;
+  color: #292828;
   align-self: flex-start;
-  color:rgb(41, 40, 40);
+  margin-right: auto;    /* left alignment */
 }
 
+/* User messages - right aligned */
 .chat-msg.user {
   background: #3b82f6;
   color: white;
   align-self: flex-end;
+  margin-left: auto;     /* right alignment */
 }
 
+/* FAQ options buttons */
 .chat-options {
   display: flex;
   flex-direction: column;
@@ -88,6 +107,7 @@
   background: #d1d5db;
 }
 
+/* Input area */
 .chat-input {
   display: flex;
   padding: 10px;

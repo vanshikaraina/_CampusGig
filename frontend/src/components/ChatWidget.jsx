@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./ChatWidget.css";
 
 const FAQ_OPTIONS = [
@@ -12,9 +12,10 @@ const FAQ_OPTIONS = [
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [currentStep, setCurrentStep] = useState(0);
   const [userInput, setUserInput] = useState("");
   const [showInput, setShowInput] = useState(false);
+
+  const messagesEndRef = useRef(null); // ✅ ref for scrolling
 
   // Load chat history from localStorage
   useEffect(() => {
@@ -26,6 +27,13 @@ export default function ChatWidget() {
   useEffect(() => {
     localStorage.setItem("chatMessages", JSON.stringify(messages));
   }, [messages]);
+
+  // Scroll to latest message when messages or chat open state changes
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, open]);
 
   const handleOptionClick = (option) => {
     if (option.answer) {
@@ -54,13 +62,29 @@ export default function ChatWidget() {
 
       {open && (
         <div className="chat-window">
-          <div className="chat-header">Customer Support</div>
+          <div className="chat-header">
+            Customer Support
+            <span
+              className="chat-close"
+              onClick={() => setOpen(false)}
+              style={{
+                float: "right",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+              }}
+            >
+              ×
+            </span>
+          </div>
+
           <div className="chat-messages">
             {messages.map((msg, idx) => (
               <div key={idx} className={`chat-msg ${msg.from}`}>
                 {msg.text}
               </div>
             ))}
+            <div ref={messagesEndRef} /> {/* ✅ scroll target */}
           </div>
 
           {!showInput && (
