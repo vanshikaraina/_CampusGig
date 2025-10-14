@@ -774,3 +774,177 @@ mai ye update krde */
   border-color: #4caf50;
   box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
+
+/* Container for filters and sorting */
+.jobs-filters,
+.sort-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+/* Search input */
+.nav-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-search:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Role filter dropdown */
+.nav-filter {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-filter:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}
+
+/* Sorting dropdown */
+.sort-container {
+  margin-top: 10px;
+}
+
+.sort-container label {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #ffc107;
+  box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .jobs-filters,
+  .sort-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-search,
+  .nav-filter,
+  .sort-select {
+    width: 100%;
+  }
+}
+
+/* Container for search bar + dropdown */
+.search-container {
+  position: relative; /* required for dropdown positioning */
+  display: inline-block; /* keeps it compact */
+  width: 100%;
+  max-width: 320px; /* optional max width */
+}
+
+/* Search input */
+.nav-search {
+  width: 100%; /* fill the container */
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.nav-search:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Suggestions dropdown */
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%; /* directly below the input */
+  left: 0;
+  width: 100%; /* match the input width */
+  max-height: 200px; /* scroll if too many items */
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  list-style: none;
+  margin: 4px 0 0 0;
+  padding: 0;
+}
+
+.suggestions-dropdown li {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
+}
+
+.suggestions-dropdown li:last-child {
+  border-bottom: none;
+}
+
+.suggestions-dropdown li:hover {
+  background-color: #f0f8ff; /* light blue hover */
+}
+
+/* Sorting dropdown */
+.sort-container {
+  margin-top: 12px;
+}
+
+.sort-select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.sort-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+/* Filter select */
+.nav-filter {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+}
+
+.nav-filter:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
