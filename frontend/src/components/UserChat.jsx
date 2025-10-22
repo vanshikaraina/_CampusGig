@@ -17,31 +17,35 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
   const [newMsg, setNewMsg] = useState("");
 
   const messagesEndRef = useRef(null);
-  const socketRef = useRef();
+  const socketRef = useRef(null);
 
-  // Connect to Socket.IO
+  // --- SOCKET.IO SETUP ---
   useEffect(() => {
     if (!posterId || !acceptedUserId || !jobId) return;
+    if (socketRef.current) return; // Prevent duplicate connections (React Strict Mode)
 
-    // const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
     const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
     socketRef.current = io("http://localhost:5000");
 
-    // Join room
+    // Join the specific room
     socketRef.current.emit("joinRoom", roomId);
 
-    // Listen for new messages
+    // Listen for incoming messages
     socketRef.current.on("newMessage", (msg) => {
-      setMessages((prev) => [...prev, msg]);
+      // ✅ Ignore echo of own message
+      if (msg.senderId !== currentUserId) {
+        setMessages((prev) => [...prev, msg]);
+      }
     });
 
     return () => {
       socketRef.current.emit("leaveRoom", roomId);
       socketRef.current.disconnect();
+      socketRef.current = null;
     };
   }, [posterId, acceptedUserId, jobId, currentUserId]);
 
-  // Fetch initial messages from API
+  // --- FETCH INITIAL CHAT HISTORY ---
   useEffect(() => {
     if (!posterId || !acceptedUserId || !jobId) return;
 
@@ -58,17 +62,17 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
     fetchMessages();
   }, [posterId, acceptedUserId, jobId]);
 
-  // Auto-scroll to latest message
+  // --- AUTO SCROLL TO BOTTOM ---
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Handle input change
+  // --- HANDLE INPUT CHANGE ---
   const handleInputChange = (e) => {
     setNewMsg(e.target.value);
   };
 
-  // Send message
+  // --- SEND MESSAGE ---
   const handleSend = () => {
     if (!newMsg.trim()) return;
 
@@ -81,11 +85,11 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
       text: newMsg.trim(),
     };
 
-    // Emit to server
+    // ✅ Emit message to server
     socketRef.current.emit("sendMessage", msgData);
 
-    // Update local state immediately
-    setMessages((prev) => [...prev, { ...msgData, _id: Date.now() }]); // temp ID
+    // ✅ Add to UI instantly (Optimistic UI)
+    setMessages((prev) => [...prev, { ...msgData, _id: Date.now() }]);
     setNewMsg("");
   };
 
@@ -95,25 +99,25 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
       <div className="chat-header">
         <button className="back-btn" onClick={() => navigate(-1)}>←</button>
         {(() => {
-          // Determine who the other person is
           const otherUserId = currentUserId === posterId ? acceptedUserId : posterId;
-
-          // Display other person's name if available, otherwise ID
           return <span>Chat with {posterName || otherUserId}</span>;
         })()}
       </div>
 
-      {/* Messages */}
+      {/* Chat Body */}
       <div className="chat-body">
         {messages.map((m, idx) => (
-          <div key={idx} className={`chat-msg ${m.senderId === currentUserId ? "me" : "them"}`}>
+          <div
+            key={m._id || idx}
+            className={`chat-msg ${m.senderId === currentUserId ? "me" : "them"}`}
+          >
             {m.text}
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Chat Input */}
       <div className="chat-input">
         <input
           type="text"
