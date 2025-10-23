@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.routes.js";
 import jobRoutes from "./routes/job.routes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import portfolioRoutes from "./routes/portfolio.routes.js";
+import path from "path";
 
 const app = express();
 // app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
@@ -18,7 +19,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-app.use("/uploads", express.static("uploads"));
+// Serve uploads folder
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 

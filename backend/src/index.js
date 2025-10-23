@@ -60,7 +60,13 @@ io.on("connection", (socket) => {
         });
       }
 
-      chat.messages.push({ senderId: senderObjId, text, jobId: jobObjId });
+      chat.messages.push({
+        senderId: senderObjId,
+        text: msgData.text || "",
+        file: msgData.file || "",
+        fileType: msgData.fileType || "",
+        jobId: jobObjId,
+      });
       await chat.save();
 
       const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
@@ -69,6 +75,37 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("newMessage", newMsg);
     } catch (err) {
       console.error("Socket sendMessage error:", err);
+    }
+  });
+
+  // Mark messages as seen
+  socket.on("messageSeen", async ({ posterId, acceptedUserId, jobId, viewerId }) => {
+    try {
+      const posterObjId = new mongoose.Types.ObjectId(posterId);
+      const acceptedObjId = new mongoose.Types.ObjectId(acceptedUserId);
+
+      const chat = await Chat.findOne({
+        $or: [
+          { posterId: posterObjId, acceptedUserId: acceptedObjId },
+          { posterId: acceptedObjId, acceptedUserId: posterObjId },
+        ],
+      });
+
+      if (!chat) return;
+
+      // Update all messages from the other user to seen
+      chat.messages.forEach((msg) => {
+        if (msg.senderId.toString() !== viewerId) {
+          msg.seen = true;
+        }
+      });
+
+      await chat.save();
+
+      const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
+      io.to(roomId).emit("messageSeenUpdate", chat.messages);
+    } catch (err) {
+      console.error("Socket messageSeen error:", err);
     }
   });
 

@@ -53,6 +53,7 @@
 // }
 
 import { Link, useNavigate } from "react-router-dom";
+import { FaComments } from "react-icons/fa";
 import "./AppStyles.css";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -88,20 +89,19 @@ export default function Navbar() {
       </div>
 
       <div className="nav-right">
-        {loggedIn && <Link to="/chat">Chat</Link>}
+        {loggedIn && (
+          <Link to="/chat" className="chat-icon-link" title="Chat">
+            <FaComments size={30} />
+          </Link>
+        )}
 
         {loggedIn ? (
           <div className="profile-dropdown">
             <span className="profile-text">Profile ▾</span>
             <div className="dropdown-content">
               <Link to="/profile">View Profile</Link>
-              
-              {/* Only render Portfolio link if user._id exists */}
               {user?._id && <Link to={`/portfolio/${user._id}`}>Portfolio</Link>}
-              
-              <button onClick={handleLogout} className="logout-btn">
-                Logout
-              </button>
+              <button onClick={handleLogout} className="logout-btn">Logout</button>
             </div>
           </div>
         ) : (
