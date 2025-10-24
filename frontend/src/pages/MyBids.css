@@ -1,0 +1,82 @@
+MyBids.css
+.my-bids-container {
+  min-height: 100vh;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Only one purple background for the whole section */
+  background: transparent;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Remove unnecessary background inside the container */
+.my-bids-container .bids-list,
+.my-bids-container h2,
+.my-bids-container h4 {
+  background: none;
+  box-shadow: none;
+}
+
+.my-bids-container h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.my-bids-container h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.bids-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+.bid-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bid-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.bid-card h4 {
+  font-size: 1.1rem;
+  color: #111827;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.bid-card p {
+  color: #4b5563;
+  margin: 5px 0;
+  font-size: 0.95rem;
+}
+
+.status {
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.status.accepted {
+  color: #22c55e;
+}
+
+.status.rejected {
+  color: #ef4444;
+}

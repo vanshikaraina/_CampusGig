@@ -559,6 +559,27 @@ mai ye update krde */
   box-shadow: 0 0 6px rgba(76, 175, 239, 0.4);
 }
 
+.chat-icon-link {
+  display: inline-flex;
+  align-items: center;
+  color: #4e9bff; 
+  margin-right: 15px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.chat-icon-link:hover {
+  color: #0f4182; /* optional hover color */
+}
+
+.chat-sender {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #aaa;
+}
+
+
 .job-buttons {
   display: flex;
   gap: 10px; /* space between buttons */

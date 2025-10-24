@@ -16,6 +16,7 @@ import ChatList from "./components/ChatList.jsx";
 import MyJobs from "./pages/MyJobs.jsx";
 import JobBids from "./pages/JobBids";
 import Portfolio from "./pages/Portfolio.jsx";
+import MyBids from "./pages/MyBids.jsx"; // 🆕 Added
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/accepted-jobs" element={<AcceptedJobsDashboard />} />
             <Route path="/post-job" element={<PostJob />} />
             <Route path="/my-jobs" element={<MyJobs />} />
+            <Route path="/mybids" element={<MyBids />} /> {/* 🆕 Added */}
             <Route path="/chat" element={<ChatList />} />  {/* ✅ Add this */}
             <Route path="/profile" element={<Profile />} />
             <Route path="/signup" element={<Signup />} />

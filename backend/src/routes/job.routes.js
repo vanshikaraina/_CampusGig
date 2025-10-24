@@ -246,8 +246,7 @@
 
 
 // export default router;
-
-
+//routes/jobs.routes.js
 import express from "express";
 import Job from "../models/Jobs.js";
 import AssignedJob from "../models/AssignedJob.js";
@@ -309,9 +308,7 @@ router.get("/:id/bids", auth, async (req, res) => {
   }
 });
 
-/**
- * ------------------- Select a Winning Bid -------------------
- */
+
 // ------------------- Select a Winning Bid -------------------
 router.put("/:jobId/select/:bidId", auth, async (req, res) => {
   try {
@@ -340,14 +337,17 @@ router.put("/:jobId/select/:bidId", auth, async (req, res) => {
     await job.save();
 
     // ✅ Create an AssignedJob
-    const assignedJob = await AssignedJob.create({
-      job: job._id,
-      student: bid.student._id,
-      jobTitle: job.title,
-      studentName: bid.student.name,
-      studentEmail: bid.student.email,
-      status: "accepted",
-    });
+const assignedJob = await AssignedJob.create({
+  job: job._id,
+  student: bid.student._id,
+  jobTitle: job.title,
+  studentName: bid.student.name,
+  studentEmail: bid.student.email,
+  bidAmount: bid.bidAmount, // ✅ Add this line
+  status: "accepted",
+});
+
+
 
     res.json({ message: "Bid selected and job assigned", assignedJob });
   } catch (err) {
@@ -373,7 +373,6 @@ router.post("/", auth, async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-
 // ------------------- GET all jobs (unaccepted, optional search/filter) -------------------
 router.get("/", auth, async (req, res) => {
   try {
@@ -385,13 +384,11 @@ router.get("/", auth, async (req, res) => {
       id => new mongoose.Types.ObjectId(id)
     );
 
-    // 🛠 Debug log
-    console.log("Passed job IDs:", passedJobIds);
-
-    // Base filter: only unaccepted jobs + exclude passed jobs
+    // Base filter: only unaccepted jobs + exclude passed + exclude own jobs
     let filter = {
       acceptedBy: null,
-      _id: { $nin: passedJobIds }
+      _id: { $nin: passedJobIds },
+      postedBy: { $ne: req.user._id }   // 🚫 exclude jobs posted by current user
     };
 
     if (search) {
@@ -411,7 +408,6 @@ router.get("/", auth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // ------------------- Accept Job -------------------
 router.put("/:id/accept", auth, async (req, res) => {
@@ -579,6 +575,78 @@ router.post("/:id/pass", auth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ------------------- Get all bids placed by current user -------------------
+// router.get("/my-bids", auth, async (req, res) => {
+//   try {
+//     // Fetch all bids by this user
+//     const bids = await Bid.find({ student: req.user._id })
+//       .populate({
+//         path: "job",
+//         select: "title budget postedBy",
+//         populate: { path: "postedBy", select: "name email" }
+//       })
+//       .sort({ createdAt: -1 });
+
+//     // Calculate total earnings from completed/rated jobs
+//     const completedJobs = await AssignedJob.find({
+//       student: req.user._id,
+//       status: { $in: ["completed", "rated"] }
+//     });
+
+//     const totalEarnings = completedJobs.reduce(
+//       (sum, job) => sum + (job.bidAmount || 0),
+//       0
+//     );
+
+//     res.json({ bids, totalEarnings });
+//   } catch (err) {
+//     console.error("Error fetching my bids:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+router.get("/my-bids", auth, async (req, res) => {
+  try {
+    // Fetch all bids placed by this user
+    const bids = await Bid.find({ student: req.user._id })
+      .populate({
+        path: "job",
+        select: "title budget postedBy",
+        populate: { path: "postedBy", select: "name email" }
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // ✅ Fetch all assigned jobs that belong to this user
+    const assignedJobs = await AssignedJob.find({
+      student: req.user._id,
+      status: { $in: ["accepted", "completed", "rated"] }
+    }).lean();
+
+    // ✅ Create a set of job IDs that were assigned
+    const assignedJobIds = new Set(assignedJobs.map(a => a.job.toString()));
+
+    // ✅ Calculate total earnings from all assigned jobs
+    const totalEarnings = assignedJobs.reduce(
+      (sum, job) => sum + (job.bidAmount || 0),
+      0
+    );
+
+    // ✅ Attach assigned job info to bids (for frontend display)
+    const bidsWithAssignedJob = bids.map(bid => ({
+      ...bid,
+      assignedJob: assignedJobs.find(a => a.job.toString() === bid.job._id.toString()) || null
+    }));
+
+    res.json({
+      bids: bidsWithAssignedJob,
+      totalEarnings
+    });
+  } catch (err) {
+    console.error("Error fetching my bids:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 
 export default router;
