@@ -1,69 +1,87 @@
 /* ===============================
+   Global Reset
+================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===============================
    Profile Container
 ================================= */
 .profile-container {
   display: flex;
-  gap: 2rem;
+  gap: clamp(1rem, 2vw, 3rem); /* dynamic gap */
   max-width: 1200px;
-  margin: 2rem auto;
+  width: 100%;
+  margin: clamp(1rem, 3vw, 4rem) auto;
   font-family: "Segoe UI", sans-serif;
   color: #333;
+  flex-wrap: wrap;
+  overflow-x: hidden; /* prevent horizontal scroll */
 }
 
 /* Sidebar */
 .profile-sidebar {
-  flex: 0 0 250px;
+  flex: 0 0 clamp(220px, 25%, 300px); /* wider sidebar */
   background: #f8f9fa;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: clamp(0.5rem, 1vw, 1rem);
+  min-width: 200px;
 }
 
+/* Profile picture */
 .profile-pic {
-  width: 120px;
+  width: clamp(80px, 15%, 120px);
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #007bff;
 }
 
+/* Edit buttons */
 .edit-btn {
   background: #007bff;
   color: white;
   border: none;
   border-radius: 50%;
-  padding: 0.5rem;
+  padding: clamp(0.3rem, 0.8vw, 0.5rem);
   cursor: pointer;
   margin-top: -1.5rem;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .edit-profile-btn {
-  margin-top: 1rem;
+  margin-top: clamp(0.5rem, 1vw, 1rem);
   background: #28a745;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.8rem, 2vw, 1rem);
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
 }
 
+/* Stats card */
 .stats-card {
   background: #fff;
-  padding: 1rem;
+  margin-top: clamp(3rem, 5vw, 4rem); /* increased space from edit button */
+  padding: clamp(0.8rem, 1.5vw, 1rem);
   border-radius: 8px;
   width: 100%;
   margin-top: 0.5rem;
   text-align: center;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  min-width: 0;
 }
 
 .stats-card h3 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
   color: #007bff;
 }
 
@@ -72,44 +90,50 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: clamp(1rem, 2vw, 2rem);
+  min-width: 300px;
+  max-width: 100%;
+  flex-shrink: 1;
 }
 
-/* Cards for each section */
+/* Section cards */
 .profile-section {
   background: #fff;
-  padding: 1.5rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  min-width: 0;
 }
 
 .profile-section h3 {
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.8rem, 1.5vw, 1rem);
   color: #007bff;
 }
 
 /* Bio */
 .bio {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
   line-height: 1.5;
   color: #555;
   margin-top: 0.5rem;
   white-space: pre-wrap;
 }
 
-/* Skills and Portfolio */
+/* Skills and portfolio */
 .skills-list, .portfolio-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: clamp(0.3rem, 0.8vw, 0.5rem);
+  max-width: 100%;
 }
 
 .skill-tag, .portfolio-card {
   background: #f1f3f5;
-  padding: 0.5rem 1rem;
+  padding: clamp(0.4rem, 0.8vw, 0.6rem) clamp(0.8rem, 2vw, 1rem);
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 1vw, 0.9rem);
   cursor: default;
+  min-width: 0;
 }
 
 .portfolio-card {
@@ -120,9 +144,28 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Tasks */
-.task-list li {
-  margin-bottom: 0.5rem;
+/* Avatar selector (horizontal scroll) */
+.avatar-selector-main {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.avatar-item {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: border 0.2s ease;
+  flex: 0 0 auto;
+}
+
+.avatar-item.selected {
+  border-color: #007bff;
 }
 
 /* Edit Form */
@@ -175,6 +218,7 @@
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
 .profile-edit-form button {
@@ -192,7 +236,7 @@
   background: #0056b3;
 }
 
-/* Contacts Row */
+/* Contacts row */
 .contacts-row {
   display: flex;
   align-items: center;
@@ -210,42 +254,84 @@
   color: #007bff;
 }
 
-/* Responsive Tweaks */
+/* ================= Responsive Tweaks ================= */
+
+/* <= 900px: stack sidebar above main */
 @media (max-width: 900px) {
   .profile-container {
     flex-direction: column;
     align-items: center;
+    padding: 1rem;
   }
+
   .profile-sidebar {
     width: 100%;
     flex-direction: row;
     justify-content: space-around;
+    padding: 1rem;
+    margin-bottom: 1rem;
   }
+
   .profile-main {
     width: 100%;
   }
+
+  .portfolio-grid {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .portfolio-card {
+    width: 100%;
+  }
+
+  .stats-card {
+    width: 48%;
+  }
 }
 
-/* Avatars in main content, horizontal */
-.avatar-selector-main {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: flex-start;
-  margin-top: 1rem;
-  padding: 0.5rem 0;
-  overflow-x: auto; /* horizontal scroll if many avatars */
-  max-width: 100%;
+/* 601px - 768px: medium tablets */
+@media (min-width: 601px) and (max-width: 900px) {
+  .stats-card {
+    width: 45%;
+  }
 }
 
-.avatar-item {
-  cursor: pointer;
-  border: 2px solid transparent;
+/* <= 600px: phones */
+@media (max-width: 600px) {
+  .profile-sidebar {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .stats-card {
+    width: 100%;
+  }
+
+  .portfolio-card {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+  }
+}
+
+/* Active Days list styling */
+.profile-section ul.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.profile-section ul.task-list li {
+  background: #f5f5f5;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
   border-radius: 8px;
-  transition: border 0.2s ease;
-  flex: 0 0 auto; /* prevent shrinking */
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.avatar-item.selected {
-  border-color: #007bff;
+.profile-section ul.task-list li b {
+  color: #0088fe;
 }
