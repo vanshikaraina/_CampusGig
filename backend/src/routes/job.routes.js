@@ -1,251 +1,3 @@
-// import express from "express";
-// import Job from "../models/Jobs.js";
-// import AssignedJob from "../models/AssignedJob.js";
-// import { auth } from "../middleware/auth.middleware.js";
-// import User from "../models/User.js";
-// import jwt from "jsonwebtoken";
-
-// const router = express.Router();
-
-// // ------------------- Create a Job -------------------
-// router.post("/", auth, async (req, res) => {
-//   try {
-//     const job = new Job({
-//       ...req.body,
-//       postedBy: req.user._id
-//     });
-//     await job.save();
-
-//     // Increment user's jobsPosted
-//     await User.findByIdAndUpdate(req.user._id, { $inc: { jobsPosted: 1 } });
-
-//     res.status(201).json(job);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// });
-
-// // ------------------- GET all jobs (unaccepted, optional search/filter) -------------------
-
-// router.get("/", auth, async (req, res) => {
-//   try {
-//     const { search, role } = req.query;
-//     const user = await User.findById(req.user._id);
-
-//     let filter = { acceptedBy: null };
-
-//     // Exclude passed jobs
-//     if (user && user.passedJobs.length > 0) {
-//       filter._id = { $nin: user.passedJobs };
-//     }
-
-//     if (search) {
-//       filter.$or = [
-//         { title: { $regex: search, $options: "i" } },
-//         { description: { $regex: search, $options: "i" } }
-//       ];
-//     }
-
-//     if (role && role !== "") {
-//       filter.category = { $regex: role, $options: "i" };
-//     }
-
-//     const jobs = await Job.find(filter).populate("postedBy", "name email");
-//     res.json(jobs);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-
-// // router.get("/", async (req, res) => {
-// //   try {
-// //     const { search, role } = req.query;
-// //     let filter = { acceptedBy: null }; // ✅ Only unaccepted jobs
-
-// //     if (search) {
-// //       filter.$or = [
-// //         { title: { $regex: search, $options: "i" } },
-// //         { description: { $regex: search, $options: "i" } }
-// //       ];
-// //     }
-
-// //     if (role && role !== "") {
-// //       filter.category = { $regex: role, $options: "i" };
-// //     }
-
-// //     const jobs = await Job.find(filter).populate("postedBy", "name email");
-// //     res.json(jobs);
-// //   } catch (err) {
-// //     res.status(500).json({ error: err.message });
-// //   }
-// // });
-
-// // ------------------- Accept Job -------------------
-// router.put("/:id/accept", auth, async (req, res) => {
-//   try {
-//     const job = await Job.findById(req.params.id);
-//     if (!job) return res.status(404).json({ message: "Job not found" });
-//     if (job.acceptedBy) return res.status(400).json({ message: "Job already accepted" });
-
-//     job.acceptedBy = req.user._id;
-//     await job.save();
-
-//     const assigned = await AssignedJob.create({
-//       job: job._id,
-//       student: req.user._id,
-//       jobTitle: job.title,
-//       studentName: req.user.name,
-//       studentEmail: req.user.email,
-//       status: "accepted", // ✅ updated enum
-//       rating: null,
-//       review: null
-//     });
-
-//     await User.findByIdAndUpdate(req.user._id, { $inc: { jobsAccepted: 1 } });
-
-//     res.json({ message: "Job accepted", job, assigned });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // ------------------- Mark Job Completed -------------------
-// router.put("/:id/complete", auth, async (req, res) => {
-//   try {
-//     const assignedJob = await AssignedJob.findById(req.params.id);
-//     if (!assignedJob) return res.status(404).json({ message: "Assigned job not found" });
-//     if (assignedJob.status !== "accepted")
-//       return res.status(400).json({ message: "Only accepted jobs can be completed" });
-
-//     assignedJob.status = "completed"; // ✅ update status
-//     await assignedJob.save();
-
-//     res.json({ message: "Job marked as completed", assignedJob });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // ------------------- Rate Completed Job -------------------
-// router.post("/:id/rate", auth, async (req, res) => {
-//   try {
-//     const { rating, review } = req.body;
-
-//     const assignedJob = await AssignedJob.findById(req.params.id);
-//     if (!assignedJob) return res.status(404).json({ message: "Job not found" });
-//     if (assignedJob.status !== "completed")
-//       return res.status(400).json({ message: "Job not completed yet" });
-
-//     // Update assigned job
-//     assignedJob.rating = rating;
-//     assignedJob.review = review;
-//     assignedJob.status = "rated";
-//     await assignedJob.save();
-
-//     // Update freelancer's ratings
-//     const user = await User.findById(assignedJob.student);
-//     if (user) {
-//       // Ensure ratings array exists
-//       user.ratings = user.ratings || [];
-//       user.ratings.push(rating);  // Add new rating
-//       user.rating = user.ratings.reduce((a, b) => a + b, 0) / user.ratings.length; // Average
-//       await user.save();
-//     }
-
-//     res.json({ message: "Rating submitted", assignedJob });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-
-// // ------------------- Get Accepted Jobs for Current User -------------------
-// router.get("/accepted", auth, async (req, res) => {
-//   try {
-//     const acceptedJobs = await AssignedJob.find({
-//       student: req.user._id,
-//       status: { $in: ["accepted", "completed", "rated"] } // ✅ status filter
-//     })
-//       .populate({ path: "job", populate: { path: "postedBy", select: "name email" } })
-//       .populate("student", "name email")
-//       .sort({ assignedAt: -1 });
-
-//     res.json(acceptedJobs);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // ------------------- Get Jobs Posted by Current User -------------------
-// router.get("/my", auth, async (req, res) => {
-//   try {
-//     const jobs = await Job.find({ postedBy: req.user._id }).populate("acceptedBy", "name email").lean();
-
-//     const jobIds = jobs.map(j => j._id);
-//     const assigned = await AssignedJob.find({ job: { $in: jobIds } }).populate("student", "name email").lean();
-
-//     const jobsWithStatus = jobs.map(job => {
-//       const assignedEntry = assigned.find(a => (a.job?._id || a.job).toString() === job._id.toString());
-//       return {
-//         ...job,
-//         status: assignedEntry?.status || "pending",
-//         acceptedBy: assignedEntry ? assignedEntry.student : null,
-//         assignedJobId: assignedEntry?._id,
-//         rating: assignedEntry?.rating || null,
-//         review: assignedEntry?.review || null
-//       };
-//     });
-
-//     res.json(jobsWithStatus);
-//   } catch (err) {
-//     res.status(500).json({ message: "Error fetching jobs" });
-//   }
-// });
-
-// router.get("/me", auth, async (req, res) => {
-//   try {
-//     const user = await User.findById(req.user._id).lean();
-
-//     // Count accepted jobs
-//     const acceptedJobsCount = await AssignedJob.countDocuments({
-//       student: req.user._id,
-//       status: { $in: ["accepted", "completed", "rated"] }
-//     });
-
-//     res.json({
-//       user: {
-//         ...user,
-//         jobsAccepted: acceptedJobsCount
-//       }
-//     });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-// // Add this to your jobs router
-// router.post("/:id/pass", auth, async (req, res) => {
-//   try {
-//     const jobId = req.params.id;
-//     const user = await User.findById(req.user._id);
-
-//     if (!user) return res.status(404).json({ message: "User not found" });
-
-//     // Avoid duplicates
-//     if (!user.passedJobs.includes(jobId)) {
-//       user.passedJobs.push(jobId);
-//       await user.save();
-//     }
-
-//     res.json({ message: "Job passed for this user" });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-
-// export default router;
 //routes/jobs.routes.js
 import express from "express";
 import Job from "../models/Jobs.js";
@@ -489,10 +241,17 @@ router.get("/accepted", auth, async (req, res) => {
   try {
     const acceptedJobs = await AssignedJob.find({
       student: req.user._id,
-      status: { $in: ["accepted", "completed", "rated"] }
+      status: { $in: ["accepted", "completed", "rated"] },
     })
-      .populate({ path: "job", populate: { path: "postedBy", select: "name email" } })
-      .populate("student", "name email")
+      .populate({
+        path: "job",
+        populate: {
+          path: "postedBy",
+          model: "User",
+          select: "name email _id",
+        },
+      })
+      .populate("student", "name email _id")
       .sort({ assignedAt: -1 });
 
     res.json(acceptedJobs);
@@ -500,6 +259,7 @@ router.get("/accepted", auth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ------------------- Get Jobs Posted by Current User -------------------
 router.get("/my", auth, async (req, res) => {
@@ -526,24 +286,58 @@ router.get("/my", auth, async (req, res) => {
     res.status(500).json({ message: "Error fetching jobs" });
   }
 });
-
+// ✅ Add this near the bottom of jobs.routes.js
 router.get("/me", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).lean();
+    const userId = req.user._id;
 
-    const acceptedJobsCount = await AssignedJob.countDocuments({
-      student: req.user._id,
-      status: { $in: ["accepted", "completed", "rated"] }
+    // Count jobs posted by the user
+    const jobsPostedCount = await Job.countDocuments({ postedBy: userId });
+
+    // Fetch all assigned jobs for the user
+    const assignedJobs = await AssignedJob.find({ student: userId }).lean();
+
+    let jobsAccepted = 0;
+    let jobsCompleted = 0;
+    let totalEarnings = 0;
+    let ratings = [];
+
+    assignedJobs.forEach(j => {
+      if (!j.job?._id) return;
+
+      // Count all jobs that were ever accepted
+      if (["accepted", "completed", "rated"].includes(j.status)) jobsAccepted++;
+
+      // Count jobs completed or rated
+      if (["completed", "rated"].includes(j.status)) {
+        jobsCompleted++;
+        const amt = typeof j.bidAmount === "string" 
+          ? parseInt(j.bidAmount.replace(/[^\d]/g, ""), 10) || 0 
+          : j.bidAmount || 0;
+        totalEarnings += amt;
+        if (typeof j.rating === "number") ratings.push(j.rating);
+      }
     });
+
+    const averageRating = ratings.length > 0
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+      : 0.0;
+
+    const user = await User.findById(userId).select("-password").lean();
 
     res.json({
       user: {
         ...user,
-        jobsAccepted: acceptedJobsCount
+        jobsPosted: jobsPostedCount,
+        jobsAccepted,
+        jobsCompleted,
+        totalEarnings,
+        rating: averageRating,
       }
     });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch user job data" });
   }
 });
 

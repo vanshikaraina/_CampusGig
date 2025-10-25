@@ -27,25 +27,30 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/auth/me", { withCredentials: true })
-      .then((res) => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/jobs/me", {
+          withCredentials: true,
+        });
         setUser(res.data.user);
         setProfilePic(res.data.user.profilePic || null);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
-        setError("Failed to load the profile");
+        setError("Failed to load profile data");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    fetchProfile();
   }, []);
 
   const pieData = [
     { name: "Jobs Posted", value: user?.jobsPosted || 0 },
     { name: "Jobs Accepted", value: user?.jobsAccepted || 0 },
+    { name: "Jobs Completed", value: user?.jobsCompleted || 0 }, // ✅ add this
   ];
-  const COLORS = ["#0088FE", "#00C49F"];
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28"]; // add a new color for completed
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,201 +112,205 @@ const Profile = () => {
   return (
     <div className="profile-container">
       {/* Sidebar */}
-<div className="profile-sidebar">
-  <div className="profile-box">
-    <div className="profile-pic-wrapper">
-      {profilePic ? (
-        <Lottie animationData={avatarsMap[profilePic]} loop style={{ height: 120 }} />
-      ) : (
-        <img
-          src="https://static.vecteezy.com/system/resources/previews/036/280/650/large_2x/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-illustration-vector.jpg"
-          alt="Profile"
-          className="profile-pic"
-        />
-      )}
-    </div>
+      <div className="profile-sidebar">
+        <div className="profile-box">
+          <div className="profile-pic-wrapper">
+            {profilePic ? (
+              <Lottie animationData={avatarsMap[profilePic]} loop style={{ height: 120 }} />
+            ) : (
+              <img
+                src="https://static.vecteezy.com/system/resources/previews/036/280/650/large_2x/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-illustration-vector.jpg"
+                alt="Profile"
+                className="profile-pic"
+              />
+            )}
+          </div>
 
-    <h2>{user.name || "Your Name"}</h2>
-    <p>{user.branch || "Branch"} | {user.college || "College"}</p>
-    <p className="bio">{user.bio || "Your bio goes here..."}</p>
+          <h2>{user.name || "Your Name"}</h2>
+          <p>
+            {user.branch || "Branch"} | {user.college || "College"}
+          </p>
+          <p className="bio">{user.bio || "Your bio goes here..."}</p>
 
-    {/* Single edit button */}
-    <button className="edit-profile-btn" onClick={() => setEditMode(!editMode)}>
-      {editMode ? "Save / Cancel" : "Edit Profile"}
-    </button>
-  </div>
+          <button className="edit-profile-btn" onClick={() => setEditMode(!editMode)}>
+            {editMode ? "Save / Cancel" : "Edit Profile"}
+          </button>
+        </div>
 
-  {/* Stats Cards */}
-  <div className="stats-card">
-    <h3>{user.jobsPosted || 0}</h3>
-    <p>Jobs Posted</p>
-  </div>
-  <div className="stats-card">
-    <h3>{user.jobsAccepted || 0}</h3>
-    <p>Jobs Accepted</p>
-  </div>
-  <div className="stats-card">
-    <h3>₹{user.earnings || 0}</h3>
-    <p>Total Earnings</p>
-  </div>
-  <div className="stats-card">
-    <h3>{typeof user.rating === "number" ? user.rating.toFixed(1) : "—"}⭐</h3>
-    <p>Rating</p>
-  </div>
-</div>
-
+        {/* Stats Cards */}
+        <div className="stats-card">
+          <h3>{user.jobsPosted || 0}</h3>
+          <p>Jobs Posted</p>
+        </div>
+        <div className="stats-card">
+          <h3>{user.jobsAccepted || 0}</h3>
+          <p>Jobs Accepted</p>
+        </div>
+        <div className="stats-card">
+          <h3>₹{user.totalEarnings || 0}</h3>
+          <p>Total Earnings</p>
+        </div>
+        <div className="stats-card">
+          <h3>{user.jobsCompleted || 0}</h3>
+          <p>Jobs Completed</p>
+        </div>
+        <div className="stats-card">
+          <h3>{user.rating ? `${user.rating}⭐` : "—⭐"}</h3>
+          <p>Rating</p>
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="profile-main">
         {editMode && (
-  <div className="avatar-selector-main">
-    {Object.keys(avatarsMap).map((id) => (
-      <div
-        key={id}
-        className={`avatar-item ${profilePic === id ? "selected" : ""}`}
-        onClick={() => setProfilePic(id)}
-      >
-        <Lottie animationData={avatarsMap[id]} loop style={{ height: 70 }} />
-      </div>
-    ))}
-  </div>
-)}
+          <div className="avatar-selector-main">
+            {Object.keys(avatarsMap).map((id) => (
+              <div
+                key={id}
+                className={`avatar-item ${profilePic === id ? "selected" : ""}`}
+                onClick={() => setProfilePic(id)}
+              >
+                <Lottie animationData={avatarsMap[id]} loop style={{ height: 70 }} />
+              </div>
+            ))}
 
-        {editMode ? (
-          <form
-            className="profile-edit-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              saveProfile();
-            }}
-          >
-            {showSelector && (
-              <ProfilePicSelector
-                onSelect={(id) => {
-                  setProfilePic(id);
-                  setUser({ ...user, profilePic: id });
-                  setShowSelector(false);
-                }}
-              />
-            )}
+            <form
+              className="profile-edit-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                saveProfile();
+              }}
+            >
+              {showSelector && (
+                <ProfilePicSelector
+                  onSelect={(id) => {
+                    setProfilePic(id);
+                    setUser({ ...user, profilePic: id });
+                    setShowSelector(false);
+                  }}
+                />
+              )}
 
-            {/* Basic Info */}
-            {["name", "branch", "college", "bio"].map((field) => (
-              <div className="form-group" key={field}>
-                <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                {field === "bio" ? (
-                  <textarea
-                    name={field}
-                    value={user[field] || ""}
-                    onChange={handleChange}
-                    placeholder={`Enter your ${field}`}
-                  />
-                ) : (
+              {/* Basic Info */}
+              {["name", "branch", "college", "bio"].map((field) => (
+                <div className="form-group" key={field}>
+                  <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+                  {field === "bio" ? (
+                    <textarea
+                      name={field}
+                      value={user[field] || ""}
+                      onChange={handleChange}
+                      placeholder={`Enter your ${field}`}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      name={field}
+                      value={user[field] || ""}
+                      onChange={handleChange}
+                      placeholder={`Enter your ${field}`}
+                    />
+                  )}
+                </div>
+              ))}
+
+              {/* Skills */}
+              <div className="form-group">
+                <label>Skills</label>
+                <div className="skills-edit">
+                  {(user.skills || []).map((s, idx) => (
+                    <span key={idx} className="skill-tag">
+                      {s} <FaTrash onClick={() => removeSkill(idx)} />
+                    </span>
+                  ))}
                   <input
                     type="text"
-                    name={field}
-                    value={user[field] || ""}
-                    onChange={handleChange}
-                    placeholder={`Enter your ${field}`}
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    placeholder="Add a skill"
                   />
-                )}
+                  <button type="button" onClick={addSkill}>
+                    <FaPlus />
+                  </button>
+                </div>
               </div>
-            ))}
 
-            {/* Skills */}
-            <div className="form-group">
-              <label>Skills</label>
-              <div className="skills-edit">
-                {(user.skills || []).map((s, idx) => (
-                  <span key={idx} className="skill-tag">
-                    {s} <FaTrash onClick={() => removeSkill(idx)} />
-                  </span>
-                ))}
+              {/* Tasks */}
+              <div className="form-group">
+                <label>Campus Gigs</label>
+                <ul>
+                  {(user.tasksDone || []).map((t, idx) => (
+                    <li key={idx}>
+                      {t.title} - {t.status} <FaTrash onClick={() => removeTask(idx)} />
+                    </li>
+                  ))}
+                </ul>
                 <input
                   type="text"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  placeholder="Add a skill"
+                  placeholder="Title"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                 />
-                <button type="button" onClick={addSkill}>
-                  <FaPlus />
+                <input
+                  type="text"
+                  placeholder="Status"
+                  value={newTask.status}
+                  onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
+                />
+                <button type="button" onClick={addTask}>
+                  Add Task
                 </button>
               </div>
-            </div>
 
-            {/* Tasks */}
-            <div className="form-group">
-              <label>Campus Gigs</label>
-              <ul>
-                {(user.tasksDone || []).map((t, idx) => (
-                  <li key={idx}>
-                    {t.title} - {t.status} <FaTrash onClick={() => removeTask(idx)} />
-                  </li>
-                ))}
-              </ul>
-              <input
-                type="text"
-                placeholder="Title"
-                value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Status"
-                value={newTask.status}
-                onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
-              />
-              <button type="button" onClick={addTask}>
-                Add Task
-              </button>
-            </div>
-
-            {/* Portfolio */}
-            <div className="profile-section">
-              <h3>Portfolio</h3>
-              <p style={{ marginBottom: "1rem", color: "#555", fontSize: "0.8rem" }}>
-                To add a new portfolio, please navigate to the Portfolio Page.
-              </p>
-              <div className="portfolio-grid">
-                {portfolioProjects.length > 0 ? (
-                  portfolioProjects.map((proj, idx) => (
-                    <a
-                      key={idx}
-                      href={proj.link || `http://localhost:5000${proj.fileUrl}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="portfolio-card"
-                    >
-                      <p>{proj.title}</p>
-                    </a>
-                  ))
-                ) : (
-                  <p>No portfolio added yet.</p>
-                )}
+              {/* Portfolio */}
+              <div className="profile-section">
+                <h3>Portfolio</h3>
+                <p style={{ marginBottom: "1rem", color: "#555", fontSize: "0.8rem" }}>
+                  To add a new portfolio, please navigate to the Portfolio Page.
+                </p>
+                <div className="portfolio-grid">
+                  {portfolioProjects.length > 0 ? (
+                    portfolioProjects.map((proj, idx) => (
+                      <a
+                        key={idx}
+                        href={proj.link || `http://localhost:5000${proj.fileUrl}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="portfolio-card"
+                      >
+                        <p>{proj.title}</p>
+                      </a>
+                    ))
+                  ) : (
+                    <p>No portfolio added yet.</p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Contacts */}
-            {["phone", "github", "linkedin", "email"].map((field) => (
-              <div className="form-group" key={field}>
-                <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                <input
-                  type={field === "email" ? "email" : "text"}
-                  name={`contacts.${field}`}
-                  value={user.contacts?.[field] || ""}
-                  onChange={handleChange}
-                />
+              {/* Contacts */}
+              {["phone", "github", "linkedin", "email"].map((field) => (
+                <div className="form-group" key={field}>
+                  <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+                  <input
+                    type={field === "email" ? "email" : "text"}
+                    name={`contacts.${field}`}
+                    value={user.contacts?.[field] || ""}
+                    onChange={handleChange}
+                  />
+                </div>
+              ))}
+
+              <div className="form-buttons">
+                <button type="submit">Save</button>
+                <button type="button" onClick={() => setEditMode(false)}>
+                  Cancel
+                </button>
               </div>
-            ))}
+            </form>
+          </div>
+        )}
 
-            <div className="form-buttons">
-              <button type="submit">Save</button>
-              <button type="button" onClick={() => setEditMode(false)}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        ) : (
+        {!editMode && (
           <>
             {/* Pie Chart */}
             <div className="profile-section">
@@ -332,8 +341,10 @@ const Profile = () => {
               <div className="skills-list">
                 {user.skills && user.skills.length > 0
                   ? user.skills.map((skill, idx) => (
-                      <span key={idx} className="skill-tag">{skill}</span>
-                    ))
+                    <span key={idx} className="skill-tag">
+                      {skill}
+                    </span>
+                  ))
                   : "No skills added yet"}
               </div>
             </div>
@@ -344,8 +355,10 @@ const Profile = () => {
               <ul className="task-list">
                 {user.tasksDone && user.tasksDone.length > 0
                   ? user.tasksDone.map((task, idx) => (
-                      <li key={idx}>{task.title} - <b>{task.status}</b></li>
-                    ))
+                    <li key={idx}>
+                      {task.title} - <b>{task.status}</b>
+                    </li>
+                  ))
                   : "No tasks completed yet"}
               </ul>
             </div>
@@ -380,18 +393,36 @@ const Profile = () => {
                 <div className="contacts-icons">
                   {user.contacts?.github && (
                     <a
-                      href={user.contacts.github.startsWith("http") ? user.contacts.github : `https://${user.contacts.github}`}
-                      target="_blank" rel="noreferrer" title="GitHub"
-                    ><FaGithub size={24} /></a>
+                      href={
+                        user.contacts.github.startsWith("http")
+                          ? user.contacts.github
+                          : `https://${user.contacts.github}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      title="GitHub"
+                    >
+                      <FaGithub size={24} />
+                    </a>
                   )}
                   {user.contacts?.linkedin && (
                     <a
-                      href={user.contacts.linkedin.startsWith("http") ? user.contacts.linkedin : `https://${user.contacts.linkedin}`}
-                      target="_blank" rel="noreferrer" title="LinkedIn"
-                    ><FaLinkedin size={24} /></a>
+                      href={
+                        user.contacts.linkedin.startsWith("http")
+                          ? user.contacts.linkedin
+                          : `https://${user.contacts.linkedin}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      title="LinkedIn"
+                    >
+                      <FaLinkedin size={24} />
+                    </a>
                   )}
                   {user.contacts?.email && (
-                    <a href={`mailto:${user.contacts.email}`} title="Email"><FaEnvelope size={24} /></a>
+                    <a href={`mailto:${user.contacts.email}`} title="Email">
+                      <FaEnvelope size={24} />
+                    </a>
                   )}
                 </div>
               </div>
