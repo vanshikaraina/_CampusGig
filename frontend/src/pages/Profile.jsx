@@ -44,6 +44,14 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
+  const badges = [];
+  if (user?.jobsPosted >= 5) badges.push("🏅 Job Poster");
+  if (user?.jobsAccepted >= 5) badges.push("🎯 Job Acceptor");
+  if (user?.jobsCompleted >= 5) badges.push("✅ Job Completer");
+  if ((user?.rating || 0) >= 4.5) badges.push("🌟 Top Rated");
+  if ((user?.tasksDone?.filter(t => t.status === "Completed").length || 0) >= 5)
+    badges.push("💪 Campus Hero");
+
   const pieData = [
     { name: "Jobs Posted", value: user?.jobsPosted || 0 },
     { name: "Jobs Accepted", value: user?.jobsAccepted || 0 },
@@ -147,17 +155,34 @@ const Profile = () => {
           <p>Jobs Accepted</p>
         </div>
         <div className="stats-card">
-          <h3>₹{user.totalEarnings || 0}</h3>
-          <p>Total Earnings</p>
-        </div>
-        <div className="stats-card">
           <h3>{user.jobsCompleted || 0}</h3>
           <p>Jobs Completed</p>
+        </div>
+        <div className="stats-card">
+          <h3>₹{user.totalEarnings || 0}</h3>
+          <p>Total Earnings</p>
         </div>
         <div className="stats-card">
           <h3>{user.rating ? `${user.rating}⭐` : "—⭐"}</h3>
           <p>Rating</p>
         </div>
+        {/* Badges */}
+        <div className="badges-container">
+          <h4>Badges</h4>
+          <div className="badges-list">
+            {badges.length > 0 ? (
+              badges.map((b, idx) => (
+                <span key={idx} className="badge">
+                  {b}
+                </span>
+              ))
+            ) : (
+              <p>No badges yet</p>
+            )}
+          </div>
+        </div>
+
+
       </div>
 
       {/* Main Content */}

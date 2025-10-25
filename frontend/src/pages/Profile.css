@@ -335,3 +335,40 @@
 .profile-section ul.task-list li b {
   color: #0088fe;
 }
+
+.badges-container {
+  margin-top: 20px;
+  padding: 10px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.badges-container h4 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+.badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.badge {
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  color: #1e3a8a;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(30, 58, 138, 0.2);
+}
