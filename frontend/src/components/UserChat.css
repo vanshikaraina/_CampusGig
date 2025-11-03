@@ -549,3 +549,190 @@
 .emoji-picker-react .emoji-picker-react__skin-tones {
   bottom: -35px !important;
 }
+
+.record-btn,
+.stop-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.stop-btn {
+  color: #ef4444;
+}
+
+.voice-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.send-audio-btn,
+.cancel-audio-btn {
+  border: none;
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  color: #fff;
+}
+
+.send-audio-btn {
+  background: #22c55e;
+}
+
+.cancel-audio-btn {
+  background: #ef4444;
+}
+
+/* 🔹 EMOJI PICKER */
+.emoji-picker-wrapper {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  z-index: 10;
+}
+
+.close-emoji-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  float: right;
+}
+
+/* 🔹 VIDEO CALL STYLES */
+.video-call-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  background: #0f172a;
+}
+
+.local-video,
+.remote-video {
+  width: 45%;
+  height: 250px;
+  border-radius: 10px;
+  background: #000;
+  object-fit: cover;
+  border: 2px solid #334155;
+}
+
+/* 🔹 INCOMING CALL POPUP */
+.incoming-call-popup {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #fff;
+  padding: 16px 24px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.accept-btn,
+.reject-btn {
+  border: none;
+  border-radius: 50%;
+  padding: 12px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: white;
+  transition: 0.3s;
+}
+
+.accept-btn {
+  background: #22c55e;
+}
+
+.reject-btn {
+  background: #ef4444;
+}
+
+.accept-btn:hover {
+  background: #16a34a;
+}
+
+.reject-btn:hover {
+  background: #dc2626;
+}
+
+/* 🔹 ANIMATIONS */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.call-status-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 24px 36px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  animation: popupFadeIn 0.3s ease, popupFadeOut 0.5s ease 2.5s forwards;
+}
+
+/* Entry animation */
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Exit animation */
+@keyframes popupFadeOut {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -45%) scale(0.9);
+  }
+}
+.end-btn {
+  background: transparent;
+  border: none;
+  color: #007bff;
+  font-size: 18px;
+  cursor: pointer;
+  /* margin-left: 10px; */
+}
+
+.end-btn {
+  color: red;
+}

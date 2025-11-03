@@ -1,410 +1,3 @@
-// // import React, { useState, useEffect, useRef } from "react";
-// // import { useParams, useNavigate, useLocation } from "react-router-dom";
-// // import { io } from "socket.io-client";
-// // import api from "../services/api";
-// // import "./UserChat.css";
-// // import { useAuth } from "../context/AuthContext";
-
-// // export default function UserChat({ currentUserId: propCurrentUserId }) {
-// //   const { posterId, jobId, acceptedUserId } = useParams();
-// //   const navigate = useNavigate();
-// //   const location = useLocation();
-// //   const { user } = useAuth();
-// //   const currentUserId = propCurrentUserId || user?._id;
-// //   const { posterName } = location.state || {};
-
-// //   const [messages, setMessages] = useState([]);
-// //   const [newMsg, setNewMsg] = useState("");
-
-// //   const messagesEndRef = useRef(null);
-// //   const socketRef = useRef(null);
-
-// //   // --- SOCKET.IO SETUP ---
-// //   useEffect(() => {
-// //     if (!posterId || !acceptedUserId || !jobId) return;
-// //     if (socketRef.current) return; // Prevent duplicate connections (React Strict Mode)
-
-// //     const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
-// //     socketRef.current = io("http://localhost:5000");
-
-// //     // Join the specific room
-// //     socketRef.current.emit("joinRoom", roomId);
-
-// //     // Listen for incoming messages
-// //     socketRef.current.on("newMessage", (msg) => {
-// //       // ✅ Ignore echo of own message
-// //       if (msg.senderId !== currentUserId) {
-// //         setMessages((prev) => [...prev, msg]);
-// //       }
-// //     });
-
-// //     return () => {
-// //       socketRef.current.emit("leaveRoom", roomId);
-// //       socketRef.current.disconnect();
-// //       socketRef.current = null;
-// //     };
-// //   }, [posterId, acceptedUserId, jobId, currentUserId]);
-
-// //   // --- FETCH INITIAL CHAT HISTORY ---
-// //   useEffect(() => {
-// //     if (!posterId || !acceptedUserId || !jobId) return;
-
-// //     const fetchMessages = async () => {
-// //       try {
-// //         const res = await api.get(`/chat/${posterId}/${jobId}/${acceptedUserId}`);
-// //         setMessages(res.data);
-// //       } catch (err) {
-// //         console.error("Error fetching chat:", err);
-// //         setMessages([]);
-// //       }
-// //     };
-
-// //     fetchMessages();
-// //   }, [posterId, acceptedUserId, jobId]);
-
-// //   // --- AUTO SCROLL TO BOTTOM ---
-// //   useEffect(() => {
-// //     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-// //   }, [messages]);
-
-// //   // --- HANDLE INPUT CHANGE ---
-// //   const handleInputChange = (e) => {
-// //     setNewMsg(e.target.value);
-// //   };
-
-// //   // --- SEND MESSAGE ---
-// //   const handleSend = () => {
-// //     if (!newMsg.trim()) return;
-
-// //     const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
-// //     const msgData = {
-// //       posterId,
-// //       acceptedUserId,
-// //       jobId,
-// //       senderId: currentUserId,
-// //       text: newMsg.trim(),
-// //     };
-
-// //     // ✅ Emit message to server
-// //     socketRef.current.emit("sendMessage", msgData);
-
-// //     // ✅ Add to UI instantly (Optimistic UI)
-// //     setMessages((prev) => [...prev, { ...msgData, _id: Date.now() }]);
-// //     setNewMsg("");
-// //   };
-
-// //   return (
-// //     <div className="user-chat">
-// //       {/* Header */}
-// //       <div className="chat-header">
-// //         <button className="back-btn" onClick={() => navigate(-1)}>←</button>
-// //         {(() => {
-// //           const otherUserId = currentUserId === posterId ? acceptedUserId : posterId;
-// //           return <span>Chat with {posterName || otherUserId}</span>;
-// //         })()}
-// //       </div>
-
-// //       {/* Chat Body */}
-// //       <div className="chat-body">
-// //         {messages.map((m, idx) => (
-// //           <div
-// //             key={m._id || idx}
-// //             className={`chat-msg ${m.senderId === currentUserId ? "me" : "them"}`}
-// //           >
-// //             {m.text}
-// //           </div>
-// //         ))}
-// //         <div ref={messagesEndRef} />
-// //       </div>
-
-// //       {/* Chat Input */}
-// //       <div className="chat-input">
-// //         <input
-// //           type="text"
-// //           value={newMsg}
-// //           onChange={handleInputChange}
-// //           placeholder="Type a message..."
-// //           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-// //         />
-// //         <button onClick={handleSend}>Send</button>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-
-// import React, { useState, useEffect, useRef } from "react";
-// import { useParams, useNavigate, useLocation } from "react-router-dom";
-// import { io } from "socket.io-client";
-// import api from "../services/api";
-// import "./UserChat.css";
-// import { useAuth } from "../context/AuthContext";
-// import { FaMicrophone, FaStop, FaCheck, FaTimes, FaArrowLeft, FaPaperPlane } from "react-icons/fa";
-
-// export default function UserChat({ currentUserId: propCurrentUserId }) {
-//   const { posterId, jobId, acceptedUserId } = useParams();
-//   const navigate = useNavigate();
-//   const location = useLocation();
-//   const { user } = useAuth();
-//   const currentUserId = propCurrentUserId || user?._id;
-//   const { posterName } = location.state || {};
-
-//   const [messages, setMessages] = useState([]);
-//   const [newMsg, setNewMsg] = useState("");
-//   const [recording, setRecording] = useState(false);
-//   const [audioBlob, setAudioBlob] = useState(null);
-//   const [mediaRecorder, setMediaRecorder] = useState(null);
-//   const [recordTime, setRecordTime] = useState(0);
-
-//   const messagesEndRef = useRef(null);
-//   const socketRef = useRef(null);
-//   const audioChunksRef = useRef([]);
-//   const timerRef = useRef(null);
-
-//   const otherUserId = currentUserId === posterId ? acceptedUserId : posterId;
-//   const [otherUserOnline, setOtherUserOnline] = useState(false);
-
-//   useEffect(() => {
-//     if (!socketRef.current || !otherUserId || !currentUserId) return;
-
-//     // Notify server this user is online
-//     socketRef.current.emit("userOnline", currentUserId);
-
-//     // Listen for online users updates
-//     socketRef.current.on("updateUserStatus", (onlineUsers) => {
-//       setOtherUserOnline(!!onlineUsers[otherUserId]);
-//     });
-
-//     return () => {
-//       socketRef.current.off("updateUserStatus");
-//     };
-//   }, [socketRef.current, otherUserId, currentUserId]);
-
-//   // --- SOCKET.IO ---
-//   useEffect(() => {
-//     if (!posterId || !acceptedUserId || !jobId) return;
-//     if (socketRef.current) return;
-
-//     const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
-//     socketRef.current = io("http://localhost:5000");
-
-//     socketRef.current.emit("joinRoom", roomId);
-
-//     socketRef.current.on("newMessage", (msg) => {
-//       // Only append valid messages
-//       if (msg.text || msg.file) {
-//         setMessages((prev) => [...prev, msg]);
-//       }
-//     });
-
-//     return () => {
-//       socketRef.current.emit("leaveRoom", roomId);
-//       socketRef.current.disconnect();
-//       socketRef.current = null;
-//     };
-//   }, [posterId, acceptedUserId, jobId, currentUserId]);
-
-//   // --- FETCH INITIAL MESSAGES ---
-//   useEffect(() => {
-//     if (!posterId || !acceptedUserId || !jobId) return;
-
-//     const fetchMessages = async () => {
-//       try {
-//         const res = await api.get(`/chat/${posterId}/${jobId}/${acceptedUserId}`);
-//         setMessages(res.data);
-//       } catch (err) {
-//         console.error(err);
-//         setMessages([]);
-//       }
-//     };
-//     fetchMessages();
-//   }, [posterId, acceptedUserId, jobId]);
-
-//   // --- SCROLL TO BOTTOM ---
-//   useEffect(() => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-//   }, [messages]);
-
-//   // --- TEXT MESSAGE ---
-//   const handleInputChange = (e) => setNewMsg(e.target.value);
-
-// const handleSend = async () => {
-//   if (!newMsg.trim()) return;
-
-//   const msgData = {
-//     posterId,
-//     acceptedUserId,
-//     jobId,
-//     senderId: currentUserId,
-//     text: newMsg.trim(),
-//     file: "",
-//     fileType: "",
-//   };
-
-//   setNewMsg(""); // Clear input immediately
-
-//   try {
-//     const res = await api.post("/chat", msgData); // Save in DB
-//     const savedMessage = res.data[res.data.length - 1]; // Only take the last message
-
-//     setMessages(prev => [...prev, savedMessage]); // Append just the new message
-//     socketRef.current.emit("sendMessage", savedMessage); // Emit saved message
-//   } catch (err) {
-//     console.error(err);
-//   }
-// };
-
-
-
-//   const sendMessage = (msgContent) => {
-//     const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
-//     const msgData = {
-//       posterId,
-//       acceptedUserId,
-//       jobId,
-//       senderId: currentUserId,
-//       ...msgContent,
-//     };
-//     socketRef.current.emit("sendMessage", msgData);
-//     setMessages((prev) => [...prev, { ...msgData, _id: Date.now() }]);
-//   };
-
-//   // --- VOICE MESSAGE ---
-//   const startRecording = async () => {
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-//       const recorder = new MediaRecorder(stream);
-//       setMediaRecorder(recorder);
-//       audioChunksRef.current = [];
-//       setRecording(true);
-//       setRecordTime(0);
-
-//       timerRef.current = setInterval(() => setRecordTime((t) => t + 1), 1000);
-
-//       recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
-
-//       recorder.onstop = () => {
-//         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-//         setAudioBlob(blob);
-//         clearInterval(timerRef.current);
-//       };
-
-//       recorder.start();
-//     } catch (err) {
-//       console.error("Microphone access denied", err);
-//     }
-//   };
-
-//   const stopRecording = () => {
-//     mediaRecorder?.stop();
-//     setRecording(false);
-//   };
-
-//   const cancelRecording = () => {
-//     setAudioBlob(null);
-//     setRecording(false);
-//     clearInterval(timerRef.current);
-//   };
-
-//   const sendAudio = async () => {
-//     if (!audioBlob) return;
-
-//     const file = new File([audioBlob], `voice-${Date.now()}.webm`, { type: "audio/webm" });
-//     const formData = new FormData();
-//     formData.append("file", file);
-
-//     try {
-//       // Upload audio
-//       const res = await api.post("/chat/upload", formData, {
-//         headers: { "Content-Type": "multipart/form-data" },
-//       });
-
-//       const fileUrl = res.data.url;
-
-//       // Send message to backend (backend saves & emits via Socket.IO)
-//       const msgData = {
-//         posterId,
-//         acceptedUserId,
-//         jobId,
-//         senderId: currentUserId,
-//         file: fileUrl,
-//         fileType: "audio",
-//         text: "",
-//       };
-
-//       const savedMessages = await api.post("/chat", msgData);
-
-//       // Append the last message locally so it shows immediately
-//       setMessages((prev) => [...prev, savedMessages.data[savedMessages.data.length - 1]]);
-//       setAudioBlob(null); // Clear recording
-//     } catch (err) {
-//       console.error("Voice message upload failed", err);
-//     }
-//   };
-
-
-
-//   const renderMessage = (m) => {
-//     if (m.text) return <span>{m.text}</span>;
-//     if (m.fileType === "image") return <img src={m.file} alt="sent" className="chat-file" />;
-//     if (m.fileType === "video") return <video src={m.file} controls className="chat-file" />;
-//     if (m.fileType === "audio" && m.file) {
-//       return <audio controls src={m.file} />;
-//     }
-//     return null;
-//   };
-
-//   return (
-//     <div className="user-chat">
-//       <div className="chat-header">
-//         <button className="back-btn" onClick={() => navigate(-1)}><FaArrowLeft /></button>
-//         <span>
-//           {posterName || otherUserId}
-//           <span className={`user-status ${otherUserOnline ? "online" : "offline"}`}>
-//             {otherUserOnline ? "Online" : "Offline"}
-//           </span>
-//         </span>
-//       </div>
-
-// <div className="chat-body">
-//   {messages.map((m, idx) => (
-//     <div key={m._id || idx} className={`chat-msg ${m.senderId === currentUserId ? "me" : "them"}`}>
-//       {renderMessage(m)}
-//     </div>
-//   ))}
-//   <div ref={messagesEndRef} />
-// </div>
-
-
-//       <div className="chat-input">
-//         {!audioBlob && (
-//           <>
-//             <input
-//               type="text"
-//               value={newMsg}
-//               onChange={handleInputChange}
-//               placeholder="Type a message..."
-//               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-//             />
-//             <button className="send-btn" onClick={handleSend}><FaPaperPlane /></button>
-//             {!recording && <button className="record-btn" onClick={startRecording}><FaMicrophone /></button>}
-//             {recording && <button className="stop-btn" onClick={stopRecording}><FaStop /> ({recordTime}s)</button>}
-//           </>
-//         )}
-
-//         {audioBlob && (
-//           <div className="voice-preview">
-//             <audio controls src={URL.createObjectURL(audioBlob)} />
-//             <button className="send-audio-btn" onClick={sendAudio}><FaCheck /></button>
-//             <button className="cancel-audio-btn" onClick={cancelRecording}><FaTimes /></button>
-//           </div>
-//         )}
-//       </div>
-
-//     </div>
-//   );
-// }
-
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -413,6 +6,8 @@ import "./UserChat.css";
 import { useAuth } from "../context/AuthContext";
 import { FaMicrophone, FaStop, FaCheck, FaTimes, FaArrowLeft, FaPaperPlane, FaSmile } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react"; // install: npm i emoji-picker-react
+// 🔹 ADD THESE IMPORTS
+import { FaVideo, FaPhoneSlash } from "react-icons/fa"; // for video call buttons
 
 export default function UserChat({ currentUserId: propCurrentUserId }) {
   const { posterId, jobId, acceptedUserId } = useParams();
@@ -435,6 +30,17 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
   const socketRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
+
+  // 🔹 VIDEO CALL STATES & REFS
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const peerConnectionRef = useRef(null);
+  const [inCall, setInCall] = useState(false);
+    // ✅ Incoming call state
+  const [incomingCall, setIncomingCall] = useState(null); // { from, signal }
+  const [callStatusPopup, setCallStatusPopup] = useState(null); 
+  // Example: { message: "Call rejected by the user" }
+const [showCallEnded, setShowCallEnded] = useState(false);
 
   const otherUserId = currentUserId === posterId ? acceptedUserId : posterId;
   const [otherUserOnline, setOtherUserOnline] = useState(false);
@@ -459,7 +65,36 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
     const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
     socketRef.current = io("http://localhost:5000");
 
-    socketRef.current.emit("joinRoom", roomId);
+socketRef.current.emit("registerUser", currentUserId);
+
+// Listen for the list of all online users
+socketRef.current.on("onlineUsers", (onlineUsers) => {
+  setOtherUserOnline(onlineUsers.includes(otherUserId));
+});
+
+
+    // 🔹 VIDEO CALL SOCKET LISTENERS
+    socketRef.current.on("callIncoming", ({ from, signal, name }) => {
+      setIncomingCall({ from, signal, name });
+    });
+
+    socketRef.current.on("callAccepted", (signal) => {
+      peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(signal));
+    });
+
+    socketRef.current.on("callRejected", () => {
+  setCallStatusPopup({ message: "Call rejected by the user" });
+  setIncomingCall(null);
+  endCall(true);
+  setTimeout(() => setCallStatusPopup(null), 3000); // auto-close after 3 sec
+});
+
+socketRef.current.on("callEnded", () => {
+  setCallStatusPopup({ message: "The call has been ended by the other user" });
+  setIncomingCall(null);
+  endCall(true);
+  setTimeout(() => setCallStatusPopup(null), 3000);
+});
 
     socketRef.current.on("newMessage", (msg) => {
       if (msg.text || msg.file) {
@@ -601,6 +236,107 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
     }
   };
 
+    // 🔹 VIDEO CALL HANDLER FUNCTIONS
+      const startVideoCall = async () => {
+    const pc = new RTCPeerConnection();
+    peerConnectionRef.current = pc;
+    setInCall(true);
+
+    const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    localVideoRef.current.srcObject = localStream;
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    pc.ontrack = (event) => {
+      remoteVideoRef.current.srcObject = event.streams[0];
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socketRef.current.emit("iceCandidate", { candidate: event.candidate, to: otherUserId });
+      }
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    socketRef.current.emit("callUser", {
+      userToCall: otherUserId,
+      signal: offer,
+      from: socketRef.current.id,
+      name: user?.name || "User",
+    });
+  };
+
+const endCall = (remote = false) => {
+  setInCall(false);
+  setIncomingCall(null);
+
+  // stop and clear local video
+  if (peerConnectionRef.current) {
+    peerConnectionRef.current.close();
+    peerConnectionRef.current = null;
+  }
+
+  if (localVideoRef.current?.srcObject) {
+    localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+    localVideoRef.current.srcObject = null;
+  }
+
+  if (remoteVideoRef.current?.srcObject) {
+    remoteVideoRef.current.srcObject = null;
+  }
+
+  // ✅ emit endCall only if *you* ended the call
+  if (!remote && socketRef.current) {
+    socketRef.current.emit("endCall", {
+      from: currentUserId,
+      to: otherUserId,
+    });
+    console.log("📴 endCall emitted:", { from: currentUserId, to: otherUserId });
+  }
+
+  // ✅ show popup that disappears after 3 sec
+  setCallStatusPopup({ message: "Call Ended" });
+  setTimeout(() => setCallStatusPopup(null), 3000);
+};
+
+
+
+    // ✅ Accept incoming call
+  const acceptCall = async () => {
+    setInCall(true);
+    const pc = new RTCPeerConnection();
+    peerConnectionRef.current = pc;
+
+    const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    localVideoRef.current.srcObject = localStream;
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    pc.ontrack = (event) => {
+      remoteVideoRef.current.srcObject = event.streams[0];
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socketRef.current.emit("iceCandidate", { candidate: event.candidate, to: incomingCall.from });
+      }
+    };
+
+    await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.signal));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+
+    socketRef.current.emit("answerCall", { signal: answer, to: incomingCall.from });
+    setIncomingCall(null);
+  };
+
+  // ✅ Reject incoming call
+  const rejectCall = () => {
+    socketRef.current.emit("rejectCall", { to: incomingCall.from });
+    setIncomingCall(null);
+  };
+
+
   // --- Render messages ---
   const renderMessage = (m) => {
     if (m.text) return <span>{m.text}</span>;
@@ -612,6 +348,11 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
 
   return (
     <div className="user-chat">
+       {callStatusPopup && (
+      <div className="call-status-popup">
+        <p>{callStatusPopup.message}</p>
+      </div>
+    )}
     <div className="chat-header">
       <button className="back-btn" onClick={() => navigate(-1)}>
         <FaArrowLeft />
@@ -623,6 +364,20 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
           {otherUserOnline ? "Online" : "Offline"}
         </span>
       </div>
+
+{/* 🔹 Video Call Button in Header */}
+{inCall ? (
+  <button className="end-btn" onClick={endCall}>
+    <FaPhoneSlash />
+  </button>
+) : (
+  <button className="video-btn" onClick={startVideoCall}>
+    <FaVideo />
+  </button>
+)}
+
+
+
     </div>
 
       <div className="chat-body">
@@ -642,6 +397,13 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
         ))}
         <div ref={messagesEndRef} />
       </div>
+{/* 🔹 VIDEO DISPLAY SECTION */}
+{inCall && (
+  <div className="video-call-container">
+    <video ref={localVideoRef} autoPlay muted playsInline className="local-video" />
+    <video ref={remoteVideoRef} autoPlay playsInline className="remote-video" />
+  </div>
+)}
 
       <div className="chat-input">
         <div className="input-row">
@@ -673,6 +435,16 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
           </div>
         )}
       </div>
+            {/* ✅ Incoming Call Popup */}
+      {incomingCall && !inCall && (
+        <div className="incoming-call-popup">
+          <p>{incomingCall.name || "Someone"} is calling...</p>
+          <div className="popup-buttons">
+            <button className="accept-btn" onClick={acceptCall}><FaCheck /></button>
+            <button className="reject-btn" onClick={rejectCall}><FaTimes /></button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
