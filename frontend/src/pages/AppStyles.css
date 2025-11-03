@@ -49,6 +49,7 @@ body {
   border-radius: 6px;
   background: #f8fafc;
   transition: 0.2s;
+  color: black;
 }
 
 .form input:focus,
