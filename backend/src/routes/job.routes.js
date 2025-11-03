@@ -7,6 +7,7 @@ import User from "../models/User.js";
 import Bid from "../models/Bid.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import Activity from "../models/Activity.js";
 
 const router = express.Router();
 
@@ -109,6 +110,23 @@ const assignedJob = await AssignedJob.create({
 });
 
 // ------------------- Create a Job -------------------
+// router.post("/", auth, async (req, res) => {
+//   try {
+//     const job = new Job({
+//       ...req.body,
+//       postedBy: req.user._id
+//     });
+//     await job.save();
+
+//     // Increment user's jobsPosted
+//     await User.findByIdAndUpdate(req.user._id, { $inc: { jobsPosted: 1 } });
+
+//     res.status(201).json(job);
+//   } catch (err) {
+//     res.status(400).json({ error: err.message });
+//   }
+// });
+
 router.post("/", auth, async (req, res) => {
   try {
     const job = new Job({
@@ -120,11 +138,20 @@ router.post("/", auth, async (req, res) => {
     // Increment user's jobsPosted
     await User.findByIdAndUpdate(req.user._id, { $inc: { jobsPosted: 1 } });
 
+    // 🟣 Log activity: job posted
+    await Activity.create({
+      user: req.user._id,
+      job: job._id,
+      action: "posted",
+      jobName: job.title || job.name || "Untitled Job",
+    });
+
     res.status(201).json(job);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 // ------------------- GET all jobs (unaccepted, optional search/filter) -------------------
 router.get("/", auth, async (req, res) => {
   try {
@@ -162,6 +189,34 @@ router.get("/", auth, async (req, res) => {
 });
 
 // ------------------- Accept Job -------------------
+// router.put("/:id/accept", auth, async (req, res) => {
+//   try {
+//     const job = await Job.findById(req.params.id);
+//     if (!job) return res.status(404).json({ message: "Job not found" });
+//     if (job.acceptedBy) return res.status(400).json({ message: "Job already accepted" });
+
+//     job.acceptedBy = req.user._id;
+//     await job.save();
+
+//     const assigned = await AssignedJob.create({
+//       job: job._id,
+//       student: req.user._id,
+//       jobTitle: job.title,
+//       studentName: req.user.name,
+//       studentEmail: req.user.email,
+//       status: "accepted",
+//       rating: null,
+//       review: null
+//     });
+
+//     await User.findByIdAndUpdate(req.user._id, { $inc: { jobsAccepted: 1 } });
+
+//     res.json({ message: "Job accepted", job, assigned });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 router.put("/:id/accept", auth, async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
@@ -184,13 +239,38 @@ router.put("/:id/accept", auth, async (req, res) => {
 
     await User.findByIdAndUpdate(req.user._id, { $inc: { jobsAccepted: 1 } });
 
+    // 🟣 Log activity: job accepted
+    await Activity.create({
+      user: req.user._id,
+      job: job._id,
+      action: "accepted",
+      jobName: job.title || "Untitled Job",
+    });
+
     res.json({ message: "Job accepted", job, assigned });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+
 // ------------------- Mark Job Completed -------------------
+// router.put("/:id/complete", auth, async (req, res) => {
+//   try {
+//     const assignedJob = await AssignedJob.findById(req.params.id);
+//     if (!assignedJob) return res.status(404).json({ message: "Assigned job not found" });
+//     if (assignedJob.status !== "accepted")
+//       return res.status(400).json({ message: "Only accepted jobs can be completed" });
+
+//     assignedJob.status = "completed";
+//     await assignedJob.save();
+
+//     res.json({ message: "Job marked as completed", assignedJob });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
 router.put("/:id/complete", auth, async (req, res) => {
   try {
     const assignedJob = await AssignedJob.findById(req.params.id);
@@ -201,11 +281,20 @@ router.put("/:id/complete", auth, async (req, res) => {
     assignedJob.status = "completed";
     await assignedJob.save();
 
+    // 🟣 Log activity: job completed
+    await Activity.create({
+      user: req.user._id,
+      job: assignedJob.job,
+      action: "completed",
+      jobName: assignedJob.jobTitle || "Untitled Job",
+    });
+
     res.json({ message: "Job marked as completed", assignedJob });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ------------------- Rate Completed Job -------------------
 router.post("/:id/rate", auth, async (req, res) => {
@@ -440,6 +529,19 @@ router.get("/my-bids", auth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// 🧾 Fetch recent activities for the logged-in user
+router.get("/activities/me", auth, async (req, res) => {
+  try {
+    const activities = await Activity.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(50);
+    res.json(activities);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 
 
