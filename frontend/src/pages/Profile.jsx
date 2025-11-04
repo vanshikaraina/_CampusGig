@@ -8,7 +8,7 @@ import ProfilePicSelector, { avatarsMap } from "../components/ProfilePicSelector
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import ActivityCalendar from 'react-activity-calendar';
 import Timeline from "../components/Timeline/Timeline";
-import api from "../services/api"; 
+import api from "../services/api";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -21,6 +21,7 @@ const Profile = () => {
   const [newTask, setNewTask] = useState({ title: "", status: "" });
   const [portfolioProjects, setPortfolioProjects] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [calendarData, setCalendarData] = useState([]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -48,39 +49,58 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchActivities = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await api.get("/jobs/activities/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      try {
+        const token = localStorage.getItem("token");
+        const res = await api.get("/jobs/activities/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-    console.log("👉 Activities API raw response:", res.data); // <-- add this
+        console.log("👉 Activities API raw response:", res.data);
 
-    const data = Array.isArray(res.data)
-      ? res.data
-      : res.data.activities || [];
+        const data = Array.isArray(res.data)
+          ? res.data
+          : res.data.activities || [];
 
-    const formatted = data.map(a => ({
-      ...a,
-      userName: a.user?.name || "Unknown User",
-  jobName: a.jobName || a.job?.title || "Untitled Job",
-  date: new Date(a.createdAt).toLocaleString(),
-      type:
-        a.action === "posted"
-          ? "green"
-          : a.action === "accepted"
-          ? "blue"
-          : "purple",
-    }));
+        // ✅ Format for timeline
+        const formatted = data.map((a) => ({
+          ...a,
+          userName: a.user?.name || "Unknown User",
+          jobName: a.jobName || a.job?.title || "Untitled Job",
+          date: new Date(a.createdAt).toLocaleString(),
+          type:
+            a.action === "posted"
+              ? "green"
+              : a.action === "accepted"
+                ? "blue"
+                : "purple",
+        }));
 
-    setActivities(formatted);
-  } catch (err) {
-    console.error("Error fetching activities:", err);
-  }
-};
+        setActivities(formatted);
 
+        // ✅ Group for Activity Calendar
+        const activityCountByDate = {};
+        data.forEach((a) => {
+          const date = new Date(a.createdAt).toISOString().split("T")[0]; // yyyy-mm-dd
+          activityCountByDate[date] = (activityCountByDate[date] || 0) + 1;
+        });
+
+        // ✅ Convert into calendar data
+        const calendar = Object.entries(activityCountByDate).map(
+          ([date, count]) => ({
+            date,
+            count,
+            level: Math.min(count, 4), // darker color for higher counts
+          })
+        );
+
+        console.log("🗓️ Calendar Data:", calendar);
+        setCalendarData(calendar);
+      } catch (err) {
+        console.error("Error fetching activities:", err);
+      }
+    };
 
     fetchActivities();
   }, []);
@@ -99,12 +119,12 @@ const Profile = () => {
     { name: "Jobs Completed", value: user?.jobsCompleted || 0 }, // ✅ add this
   ];
 
-  const data = [
-    { date: "2025-10-01", count: 4 },
-    { date: "2025-10-02", count: 1 },
-    { date: "2025-10-03", count: 0 },
-    // ... add more
-  ];
+  // const data = [
+  //   { date: "2025-10-01", count: 4 },
+  //   { date: "2025-10-02", count: 1 },
+  //   { date: "2025-10-03", count: 0 },
+  //   // ... add more
+  // ];
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28"]; // add a new color for completed
 
@@ -230,10 +250,10 @@ const Profile = () => {
           </div>
         </div>
 
-<div className="timeline-section">
-  {/* <h3>Activity Timeline</h3> */}
-  <Timeline activities={activities} />
-</div>
+        <div className="timeline-section">
+          {/* <h3>Activity Timeline</h3> */}
+          <Timeline activities={activities} />
+        </div>
 
 
       </div>
@@ -511,31 +531,43 @@ const Profile = () => {
 
             <div className="calendar-container">
               <h3 className="calendar-title">Activity Overview</h3>
-              <ActivityCalendar
-                data={[
-                  { date: "2025-10-01", count: 3, level: 2 },
-                  { date: "2025-10-02", count: 1, level: 1 },
-                  { date: "2025-10-03", count: 4, level: 3 },
-                  { date: "2025-10-04", count: 0, level: 0 },
-                  { date: "2025-10-05", count: 2, level: 2 },
-                ]}
-                labels={{
-                  legend: { less: "Less", more: "More" },
-                  totalCount: "{{count}} activities in {{year}}",
-                }}
-                theme={{
-                  light: ['#f3e8ff', '#d8b4fe', '#c084fc', '#a855f7', '#7e22ce'],
-                  dark: ['#2e1065', '#4c1d95', '#6d28d9', '#8b5cf6', '#c4b5fd'],
-                }}
-                colorScheme="light"
-                hideColorLegend={false}
-                blockSize={15}
-                blockMargin={4}
-                fontSize={14}
-              />
-            </div>
 
-            
+              {calendarData && calendarData.length > 0 ? (
+                <>
+                  <div className="month-labels">
+  {Array.from({ length: 12 }).map((_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - (11 - i));
+    return (
+      <span key={i} className="month-label">
+        {date.toLocaleString("default", { month: "short" })}
+      </span>
+    );
+  })}
+</div>
+
+                  <ActivityCalendar
+                    data={calendarData}
+                    labels={{
+                      legend: { less: "Less", more: "More" },
+                      totalCount: "{{count}} activities in {{year}}",
+                    }}
+                    theme={{
+                      light: ['#f3e8ff', '#d8b4fe', '#c084fc', '#a855f7', '#7e22ce'],
+                      dark: ['#2e1065', '#4c1d95', '#6d28d9', '#8b5cf6', '#c4b5fd'],
+                    }}
+                    colorScheme="light"
+                    hideColorLegend={false}
+                    blockSize={15}
+                    blockMargin={4}
+                    fontSize={14}
+                  />
+
+                </>
+              ) : (
+                <p className="text-gray-500 italic">No activity data yet</p>
+              )}
+            </div>
 
           </>
         )}

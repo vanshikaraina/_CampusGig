@@ -376,48 +376,72 @@
 /* ===============================
    Activity Bar
 ================================= */
-
-.profile-section h3 {
-  margin-bottom: 10px;
-  color: #333;
-}
+/* Container for the whole calendar section */
 .calendar-container {
-  margin: 2rem auto;
-  padding: 2rem;
-  width: 700px;
-  background: #faf5ff;
+  background: #fff;
+  padding: 20px 24px;
   border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(147, 51, 234, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .calendar-container:hover {
-  box-shadow: 0 6px 20px rgba(147, 51, 234, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
+/* Title styling */
 .calendar-title {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  color: #6b21a8;
-  margin-bottom: 1.5rem;
+  margin-bottom: 16px;
+  color: #4b0082;
+  text-align: left;
+}
+
+/* Activity calendar alignment */
+.react-activity-calendar {
+  margin: 0 auto;
+}
+
+/* Month label section */
+.month-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
   letter-spacing: 0.5px;
 }
 
-.react-activity-calendar {
-  display: inline-block;
+/* Each month label */
+.month-label {
+  flex: 1;
+  text-align: center;
+  color: #6b7280; /* soft gray */
+  font-weight: 500;
 }
 
-.react-activity-calendar__legend {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-  color: #6b21a8;
+/* Light mode colors for the calendar blocks */
+.react-activity-calendar rect {
+  rx: 3px; /* rounded squares */
+  transition: all 0.2s ease-in-out;
 }
 
-.react-activity-calendar__legend-colors > rect {
-  border-radius: 3px;
+.react-activity-calendar rect:hover {
+  transform: scale(1.1);
+  stroke: #6d28d9;
+  stroke-width: 1px;
+}
+
+/* No data message */
+.calendar-container p {
+  color: #888;
+  font-size: 0.95rem;
+  padding: 12px;
 }
