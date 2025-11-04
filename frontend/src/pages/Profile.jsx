@@ -535,16 +535,16 @@ const Profile = () => {
               {calendarData && calendarData.length > 0 ? (
                 <>
                   <div className="month-labels">
-  {Array.from({ length: 12 }).map((_, i) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - (11 - i));
-    return (
-      <span key={i} className="month-label">
-        {date.toLocaleString("default", { month: "short" })}
-      </span>
-    );
-  })}
-</div>
+                    {Array.from({ length: 12 }).map((_, i) => {
+                      const date = new Date();
+                      date.setMonth(date.getMonth() - (11 - i));
+                      return (
+                        <span key={i} className="month-label">
+                          {date.toLocaleString("default", { month: "short" })}
+                        </span>
+                      );
+                    })}
+                  </div>
 
                   <ActivityCalendar
                     data={calendarData}
