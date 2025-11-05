@@ -331,6 +331,7 @@ import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 import "./AppStyles.css";
 import BidModel from "../components/BidModel";
+import { toast } from "react-toastify";
 
 export default function JobsList({ user, setUser }) {
   const [jobs, setJobs] = useState([]);
@@ -440,10 +441,10 @@ export default function JobsList({ user, setUser }) {
       setCurrentUser(res.data.user);
       if (setUser) setUser(res.data.user);
       setShowBidModal(false);
-      alert("✅ Bid placed successfully!");
+      toast.success("✅ Bid placed successfully!");
     } catch (err) {
       console.error("Error bidding:", err.response?.data || err.message);
-      alert(`Failed to place bid: ${err.response?.data?.message || err.message}`);
+      toast.error(`Failed to place bid: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -452,10 +453,35 @@ export default function JobsList({ user, setUser }) {
     try {
       await api.post(`/jobs/${jobId}/pass`);
       setJobs((prev) => prev.filter((job) => job._id !== jobId));
-      alert("You passed this job.");
+      toast.info("🚫 You passed this job.");
     } catch (err) {
       console.error("Error passing job:", err.response?.data || err.message);
-      alert(`Failed to pass job: ${err.response?.data?.message || err.message}`);
+      toast.error(`Failed to pass job: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  // 🆕 Handle save/unsave job
+  const handleSaveJob = async (jobId) => {
+    try {
+      const isSaved = currentUser?.savedJobs?.includes(jobId);
+      if (isSaved) {
+        await api.delete(`/users/unsave-job/${jobId}`);
+        setCurrentUser((prev) => ({
+          ...prev,
+          savedJobs: prev.savedJobs.filter((id) => id !== jobId),
+        }));
+        toast.info("❌ Removed from Saved Jobs");
+      } else {
+        await api.post(`/users/save-job/${jobId}`);
+        setCurrentUser((prev) => ({
+          ...prev,
+          savedJobs: [...(prev.savedJobs || []), jobId],
+        }));
+        toast.success("⭐ Job saved!");
+      }
+    } catch (err) {
+      console.error("Error saving job:", err.response?.data || err.message);
+      toast.error("Failed to save job. Please try again.");
     }
   };
 
@@ -535,8 +561,14 @@ export default function JobsList({ user, setUser }) {
       <p>
         <strong>Posted by:</strong> {job.postedBy?.name || "Anonymous"}
       </p>
+
       <div className="job-actions">
-        {/* 🆕 Updated bid button to open modal */}
+        {/* 🆕 Save / Unsave button */}
+        <button onClick={() => handleSaveJob(job._id)}>
+          {currentUser?.savedJobs?.includes(job._id) ? "★ Saved" : "☆ Save"}
+        </button>
+
+        {/* Existing buttons */}
         <button onClick={() => openBidModal(job._id)}>Place Bid</button>
         <button onClick={() => handlePass(job._id)}>Pass</button>
       </div>
@@ -591,7 +623,9 @@ export default function JobsList({ user, setUser }) {
           >
             {search.trim() === "" && recommendations.length > 0 && (
               <>
-                <p style={{ fontWeight: "bold", color: "#000" }}>Recommended for you:</p>
+                <p style={{ fontWeight: "bold", color: "#000" }}>
+                  Recommended for you:
+                </p>
                 {recommendations.map((job) => (
                   <div
                     key={job._id}

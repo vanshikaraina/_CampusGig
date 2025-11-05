@@ -102,7 +102,7 @@ export default function Navbar() {
               <Link to="/profile">View Profile</Link>
               {user?._id && <Link to={`/portfolio/${user._id}`}>Portfolio</Link>}
               <Link to="/mybids">My Bids / Earnings</Link> {/* 🆕 Moved here */}
-
+              <Link to="/saved-jobs">Saved Jobs</Link> {/* ✅ Moved here */}
               <button onClick={handleLogout} className="logout-btn">Logout</button>
             </div>
           </div>
