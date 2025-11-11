@@ -18,6 +18,7 @@ import JobBids from "./pages/JobBids";
 import Portfolio from "./pages/Portfolio.jsx";
 import MyBids from "./pages/MyBids.jsx"; // 🆕 Added
 import ActivityTimelinePage from "./components/Timeline/ActivityTimelinePage"; // adjust path
+import SavedJobs from "./pages/SavedJobs.jsx"; // 🆕 Added
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/post-job" element={<PostJob />} />
             <Route path="/my-jobs" element={<MyJobs />} />
             <Route path="/mybids" element={<MyBids />} /> {/* 🆕 Added */}
+            <Route path="/saved-jobs" element={<SavedJobs />} /> {/* 🆕 Added */}
             <Route path="/chat" element={<ChatList />} />  {/* ✅ Add this */}
             <Route path="/profile" element={<Profile />} />
             <Route path="/activities" element={<ActivityTimelinePage />} />

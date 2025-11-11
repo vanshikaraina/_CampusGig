@@ -15,6 +15,8 @@ import {
   notifyJobCompleted,
   notifyJobRated,
 } from "../utils/notification.js";
+// import razorpay from "../config/razorpayClient.js";
+ // make sure this file exports configured razorpay instance
 
 const router = express.Router();
 

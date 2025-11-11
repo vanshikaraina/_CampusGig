@@ -76,6 +76,8 @@ const userSchema = new mongoose.Schema(
       linkedin: { type: String },
       email: { type: String }
     },
+  // 🆕 New feature: saved jobs (wishlist)
+    savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
   },
   { timestamps: true }
 );

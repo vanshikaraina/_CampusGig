@@ -2,6 +2,7 @@
 import express from "express";
 import AssignedJob from "../models/AssignedJob.js";
 import { auth } from "../middleware/auth.middleware.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -44,4 +45,43 @@ router.get("/:id/portfolio", async (req, res) => {
 });
 
 
+// 🆕 --- SAVED JOBS FEATURE ---
+
+// Save a job
+router.post("/save-job/:jobId", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user.savedJobs.includes(req.params.jobId)) {
+      user.savedJobs.push(req.params.jobId);
+      await user.save();
+    }
+    res.status(200).json({ message: "Job saved successfully", savedJobs: user.savedJobs });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Unsave a job
+router.delete("/unsave-job/:jobId", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.savedJobs = user.savedJobs.filter(
+      (jobId) => jobId.toString() !== req.params.jobId
+    );
+    await user.save();
+    res.status(200).json({ message: "Job removed from saved list", savedJobs: user.savedJobs });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get all saved jobs
+router.get("/saved-jobs", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("savedJobs");
+    res.status(200).json(user.savedJobs);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 export default router;
