@@ -80,3 +80,56 @@ MyBids.css
 .status.rejected {
   color: #ef4444;
 }
+/* Filter & Sort Controls */
+.filter-sort-controls {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.filter-sort-controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+.filter-sort-controls select {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+.filter-sort-controls select {
+  color: #111827; /* dark text */
+  background-color: #f8fafc; /* light background */
+}
+
+.filter-sort-controls select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+@media (max-width: 600px) {
+  .filter-sort-controls {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+}
+
+.total-earnings {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #16a34a; /* simple green */
+  text-align: center;
+  margin: 15px 0;
+}
