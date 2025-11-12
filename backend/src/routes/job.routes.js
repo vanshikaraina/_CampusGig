@@ -166,6 +166,31 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
+/**
+ * ------------------- Get Job by ID -------------------
+ */
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({ message: "Invalid Job ID" });
+    }
+
+    const job = await Job.findById(jobId)
+      .populate("postedBy", "name email")
+      .populate("acceptedBy", "name email");
+
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    res.json(job);
+  } catch (err) {
+    console.error("Error fetching job by ID:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ------------------- GET all jobs (unaccepted, optional search/filter) -------------------
 router.get("/", auth, async (req, res) => {
   try {
