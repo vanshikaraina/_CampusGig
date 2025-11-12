@@ -1,10 +1,21 @@
 // Landing.jsx
-import React from "react";
+// import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./Landing.css";
+import React, { useState, useEffect } from "react"; // add useState and useEffect
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState(false);
+
+    useEffect(() => {
+    // Show popup after 5 seconds
+    const timer = setTimeout(() => {
+      setShowPopup(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="landing-page">
@@ -40,20 +51,6 @@ export default function Landing() {
     </div>
     </section>
 
-    <section className="location-map">
-        <h2>Find Us Here</h2>
-        <iframe
-          title="CampusGig Location"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3437.1749717999796!2d76.65720287482759!3d30.51609109607186!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390fc32344a6e2d7%3A0x81b346dee91799ca!2sChitkara%20University!5e0!3m2!1sen!2sin!4v1762922379648!5m2!1sen!2sin"
-          width="100%"
-          height="400"
-          style={{ border: 0 }}
-          allowFullScreen=""
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        ></iframe>
-      </section>
-
     <section className="testimonials">
     <h2>What Students Say</h2>
     <div className="testimonial-cards">
@@ -72,6 +69,20 @@ export default function Landing() {
     <h2>Ready to Launch Your Career?</h2>
     <button onClick={() => navigate("/signup")}>Sign Up Now</button>
     </section>
+
+        <section className="location-map">
+        <h2>Find Us Here</h2>
+        <iframe
+          title="CampusGig Location"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3437.1749717999796!2d76.65720287482759!3d30.51609109607186!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390fc32344a6e2d7%3A0x81b346dee91799ca!2sChitkara%20University!5e0!3m2!1sen!2sin!4v1762922379648!5m2!1sen!2sin"
+          width="100%"
+          height="400"
+          style={{ border: 0 }}
+          allowFullScreen=""
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </section>
 
       {/* Footer */}
       <footer className="landing-footer">
@@ -110,6 +121,20 @@ export default function Landing() {
           <p>&copy; 2025 CampusGig. All rights reserved.</p>
         </div>
       </footer>
+
+            {/* Pop-up */}
+      {showPopup && (
+        <div className="popup">
+          <div className="popup-content">
+            <span className="close" onClick={() => setShowPopup(false)}>
+              &times;
+            </span>
+            <h3>🚀 New Feature Alert!</h3>
+            <p>Check out the latest real-time chat feature on CampusGig!</p>
+            <button onClick={() => navigate("/jobs")}>Explore Jobs</button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
