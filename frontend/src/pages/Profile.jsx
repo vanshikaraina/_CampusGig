@@ -250,17 +250,17 @@ const Profile = () => {
           </div>
         </div>
         {/* Ad Banner */}
-<a 
-  href="https://ruul.io/blog/freelancing-ideas-and-tips-for-students" 
-  target="_blank" 
-  rel="noopener noreferrer"
-  className="ad-banner"
->
-  <img
-    src="https://www.refrens.com/grow/wp-content/uploads/2022/03/10-tips-to-become-a-better-freelancer.png"   // replace with your vertical image
-    alt="Freelancing Tips"
-  />
-</a>
+        <a
+          href="https://ruul.io/blog/freelancing-ideas-and-tips-for-students"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ad-banner"
+        >
+          <img
+            src="https://www.refrens.com/grow/wp-content/uploads/2022/03/10-tips-to-become-a-better-freelancer.png"   // replace with your vertical image
+            alt="Freelancing Tips"
+          />
+        </a>
 
       </div>
 
