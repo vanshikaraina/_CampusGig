@@ -5,9 +5,8 @@ import api from "../services/api";
 import "./UserChat.css";
 import { useAuth } from "../context/AuthContext";
 import { FaMicrophone, FaStop, FaCheck, FaTimes, FaArrowLeft, FaPaperPlane, FaSmile } from "react-icons/fa";
-import EmojiPicker from "emoji-picker-react"; // install: npm i emoji-picker-react
-// 🔹 ADD THESE IMPORTS
-import { FaVideo, FaPhoneSlash } from "react-icons/fa"; // for video call buttons
+import EmojiPicker from "emoji-picker-react";
+import { FaVideo, FaPhoneSlash } from "react-icons/fa";
 
 export default function UserChat({ currentUserId: propCurrentUserId }) {
   const { posterId, jobId, acceptedUserId } = useParams();
@@ -20,44 +19,38 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
+  const [notifications, setNotifications] = useState([]);
+  const notificationSound = useRef(null);
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordTime, setRecordTime] = useState(0);
-
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
 
-  // 🔹 VIDEO CALL STATES & REFS
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const [inCall, setInCall] = useState(false);
-    // ✅ Incoming call state
-  const [incomingCall, setIncomingCall] = useState(null); // { from, signal }
-  const [callStatusPopup, setCallStatusPopup] = useState(null); 
-  // Example: { message: "Call rejected by the user" }
-const [showCallEnded, setShowCallEnded] = useState(false);
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [callStatusPopup, setCallStatusPopup] = useState(null);
 
   const otherUserId = currentUserId === posterId ? acceptedUserId : posterId;
   const [otherUserOnline, setOtherUserOnline] = useState(false);
 
-  // --- Socket.IO online status ---
+  // --- Online status ---
   useEffect(() => {
     if (!socketRef.current || !otherUserId || !currentUserId) return;
     socketRef.current.emit("userOnline", currentUserId);
-
     socketRef.current.on("updateUserStatus", (onlineUsers) => {
       setOtherUserOnline(!!onlineUsers[otherUserId]);
     });
-
     return () => socketRef.current.off("updateUserStatus");
-  }, [socketRef.current, otherUserId, currentUserId]);
+  }, [otherUserId, currentUserId]);
 
-  // --- Socket.IO messages ---
+  // --- Socket.IO setup ---
   useEffect(() => {
     if (!posterId || !acceptedUserId || !jobId) return;
     if (socketRef.current) return;
@@ -65,43 +58,60 @@ const [showCallEnded, setShowCallEnded] = useState(false);
     const roomId = [posterId, acceptedUserId, jobId].sort().join("-");
     socketRef.current = io("http://localhost:5000");
 
-socketRef.current.emit("registerUser", currentUserId);
+    socketRef.current.emit("registerUser", currentUserId);
+    socketRef.current.emit("joinRoom", roomId);
 
-// Listen for the list of all online users
-socketRef.current.on("onlineUsers", (onlineUsers) => {
-  setOtherUserOnline(onlineUsers.includes(otherUserId));
-});
+    // ONLINE USERS
+    socketRef.current.on("onlineUsers", (onlineUsers) => {
+      const isOnline = onlineUsers.includes(otherUserId);
+      setOtherUserOnline(isOnline);
+      pushNotification(isOnline ? "User is online" : "User went offline");
+    });
 
-
-    // 🔹 VIDEO CALL SOCKET LISTENERS
+    // VIDEO CALL EVENTS
     socketRef.current.on("callIncoming", ({ from, signal, name }) => {
       setIncomingCall({ from, signal, name });
+      pushNotification(`${name || "User"} is calling you`);
     });
 
     socketRef.current.on("callAccepted", (signal) => {
-      peerConnectionRef.current?.setRemoteDescription(new RTCSessionDescription(signal));
-    });
-
-    socketRef.current.on("callRejected", () => {
-  setCallStatusPopup({ message: "Call rejected by the user" });
-  setIncomingCall(null);
-  endCall(true);
-  setTimeout(() => setCallStatusPopup(null), 3000); // auto-close after 3 sec
-});
-
-socketRef.current.on("callEnded", () => {
-  setCallStatusPopup({ message: "The call has been ended by the other user" });
-  setIncomingCall(null);
-  endCall(true);
-  setTimeout(() => setCallStatusPopup(null), 3000);
-});
-
-    socketRef.current.on("newMessage", (msg) => {
-      if (msg.text || msg.file) {
-        setMessages((prev) => [...prev, msg]);
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(signal));
       }
     });
 
+    socketRef.current.on("callRejected", () => {
+      setCallStatusPopup({ message: "Call rejected by the user" });
+      setIncomingCall(null);
+      endCall(true);
+      setTimeout(() => setCallStatusPopup(null), 3000);
+    });
+
+    socketRef.current.on("callEnded", () => {
+      endCallCleanup();
+      setCallStatusPopup({ message: "Call ended" });
+      setTimeout(() => setCallStatusPopup(null), 3000);
+    });
+
+    // ICE candidate from remote peer
+    socketRef.current.on("iceCandidate", (candidate) => {
+      try {
+        if (candidate && peerConnectionRef.current) {
+          peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => {});
+        }
+      } catch (e) {}
+    });
+
+    // MESSAGES
+    const handleNewMessage = (msg) => {
+      if (msg.text || msg.file) {
+        setMessages((prev) => [...prev, msg]);
+      }
+      if (msg.senderId !== currentUserId) pushNotification("New message received");
+    };
+    socketRef.current.on("newMessage", handleNewMessage);
+
+    // cleanup on unmount
     return () => {
       socketRef.current.emit("leaveRoom", roomId);
       socketRef.current.disconnect();
@@ -131,40 +141,15 @@ socketRef.current.on("callEnded", () => {
 
   // --- Send text message ---
   const handleInputChange = (e) => setNewMsg(e.target.value);
-
   const handleSend = async () => {
     if (!newMsg.trim()) return;
-
-    const msgData = {
-      posterId,
-      acceptedUserId,
-      jobId,
-      senderId: currentUserId,
-      text: newMsg.trim(),
-      file: "",
-      fileType: "",
-    };
-
+    const msgData = { posterId, acceptedUserId, jobId, senderId: currentUserId, text: newMsg.trim(), file: "", fileType: "" };
     setNewMsg("");
-
-    try {
-      // send via API
-      const res = await api.post("/chat", msgData);
-      const savedMessage = res.data[res.data.length - 1];
-      setMessages((prev) => [...prev, savedMessage]);
-
-      // emit via socket
-      socketRef.current.emit("sendMessage", savedMessage);
-    } catch (err) {
-      console.error(err);
-    }
+    socketRef.current.emit("sendMessage", msgData);
   };
 
   // --- Emoji Picker ---
-  const handleEmojiClick = (emojiObject) => {
-    setNewMsg((prev) => prev + (emojiObject?.emoji || ""));
-  };
-
+  const handleEmojiClick = (emojiObject) => setNewMsg((prev) => prev + (emojiObject?.emoji || ""));
   const toggleEmojiPicker = () => setShowEmojiPicker((prev) => !prev);
 
   // --- Voice message ---
@@ -176,166 +161,142 @@ socketRef.current.on("callEnded", () => {
       audioChunksRef.current = [];
       setRecording(true);
       setRecordTime(0);
-
       timerRef.current = setInterval(() => setRecordTime((t) => t + 1), 1000);
 
       recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
-
       recorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        setAudioBlob(blob);
+        setAudioBlob(new Blob(audioChunksRef.current, { type: "audio/webm" }));
         clearInterval(timerRef.current);
       };
-
       recorder.start();
     } catch (err) {
       console.error("Microphone access denied", err);
     }
   };
-
-  const stopRecording = () => {
-    mediaRecorder?.stop();
-    setRecording(false);
-  };
-
-  const cancelRecording = () => {
-    setAudioBlob(null);
-    setRecording(false);
-    clearInterval(timerRef.current);
-  };
-
+  const stopRecording = () => mediaRecorder?.stop() && setRecording(false);
+  const cancelRecording = () => { setAudioBlob(null); setRecording(false); clearInterval(timerRef.current); };
   const sendAudio = async () => {
     if (!audioBlob) return;
-
     const file = new File([audioBlob], `voice-${Date.now()}.webm`, { type: "audio/webm" });
     const formData = new FormData();
     formData.append("file", file);
-
     try {
-      const res = await api.post("/chat/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.post("/chat/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      const msgData = { posterId, acceptedUserId, jobId, senderId: currentUserId, file: res.data.url, fileType: "audio", text: "" };
+      await api.post("/chat", msgData);
+      setAudioBlob(null);
+    } catch (err) { console.error("Voice message upload failed", err); }
+  };
 
-      const fileUrl = res.data.url;
+  const endCallCleanup = () => {
+    try {
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+        peerConnectionRef.current = null;
+      }
 
-      const msgData = {
-        posterId,
-        acceptedUserId,
-        jobId,
-        senderId: currentUserId,
-        file: fileUrl,
-        fileType: "audio",
-        text: "",
+      if (localVideoRef.current?.srcObject) {
+        localVideoRef.current.srcObject.getTracks().forEach(t => t.stop());
+        localVideoRef.current.srcObject = null;
+      }
+
+      if (remoteVideoRef.current?.srcObject) {
+        // remote stream tracks are usually not controllable, but clear ref
+        remoteVideoRef.current.srcObject = null;
+      }
+    } catch (e) {}
+
+    setInCall(false);
+    setIncomingCall(null);
+  };
+
+  // --- Video call functions ---
+  const startVideoCall = async () => {
+    try {
+      const pc = new RTCPeerConnection();
+      peerConnectionRef.current = pc;
+      setInCall(true);
+
+      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideoRef.current.srcObject = localStream;
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+      pc.ontrack = (event) => {
+        remoteVideoRef.current.srcObject = event.streams[0];
       };
 
-      const savedMessages = await api.post("/chat", msgData);
-      setMessages((prev) => [...prev, savedMessages.data[savedMessages.data.length - 1]]);
-      setAudioBlob(null);
+      pc.onicecandidate = (event) => {
+        if (event.candidate && socketRef.current) {
+          socketRef.current.emit("iceCandidate", { candidate: event.candidate, to: otherUserId });
+        }
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      socketRef.current.emit("callUser", { userToCall: otherUserId, signal: offer, from: currentUserId, name: user?.name || "User" });
     } catch (err) {
-      console.error("Voice message upload failed", err);
+      console.error("startVideoCall error:", err);
+      endCallCleanup();
     }
   };
 
-    // 🔹 VIDEO CALL HANDLER FUNCTIONS
-      const startVideoCall = async () => {
-    const pc = new RTCPeerConnection();
-    peerConnectionRef.current = pc;
-    setInCall(true);
+  const endCall = (remote = false) => {
+    if (!remote && socketRef.current) {
+      socketRef.current.emit("endCall", { from: currentUserId, to: otherUserId });
+    }
 
-    const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    localVideoRef.current.srcObject = localStream;
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-
-    pc.ontrack = (event) => {
-      remoteVideoRef.current.srcObject = event.streams[0];
-    };
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.current.emit("iceCandidate", { candidate: event.candidate, to: otherUserId });
-      }
-    };
-
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-
-    socketRef.current.emit("callUser", {
-      userToCall: otherUserId,
-      signal: offer,
-      from: socketRef.current.id,
-      name: user?.name || "User",
-    });
+    endCallCleanup();
+    setCallStatusPopup({ message: "Call Ended" });
+    setTimeout(() => setCallStatusPopup(null), 3000);
   };
 
-const endCall = (remote = false) => {
-  setInCall(false);
-  setIncomingCall(null);
-
-  // stop and clear local video
-  if (peerConnectionRef.current) {
-    peerConnectionRef.current.close();
-    peerConnectionRef.current = null;
-  }
-
-  if (localVideoRef.current?.srcObject) {
-    localVideoRef.current.srcObject.getTracks().forEach((t) => t.stop());
-    localVideoRef.current.srcObject = null;
-  }
-
-  if (remoteVideoRef.current?.srcObject) {
-    remoteVideoRef.current.srcObject = null;
-  }
-
-  // ✅ emit endCall only if *you* ended the call
-  if (!remote && socketRef.current) {
-    socketRef.current.emit("endCall", {
-      from: currentUserId,
-      to: otherUserId,
-    });
-    console.log("📴 endCall emitted:", { from: currentUserId, to: otherUserId });
-  }
-
-  // ✅ show popup that disappears after 3 sec
-  setCallStatusPopup({ message: "Call Ended" });
-  setTimeout(() => setCallStatusPopup(null), 3000);
-};
-
-
-
-    // ✅ Accept incoming call
   const acceptCall = async () => {
-    setInCall(true);
-    const pc = new RTCPeerConnection();
-    peerConnectionRef.current = pc;
+    try {
+      setInCall(true);
+      const pc = new RTCPeerConnection();
+      peerConnectionRef.current = pc;
 
-    const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    localVideoRef.current.srcObject = localStream;
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideoRef.current.srcObject = localStream;
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-    pc.ontrack = (event) => {
-      remoteVideoRef.current.srcObject = event.streams[0];
-    };
+      pc.ontrack = (event) => {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      };
 
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.current.emit("iceCandidate", { candidate: event.candidate, to: incomingCall.from });
+      pc.onicecandidate = (event) => {
+        if (event.candidate && socketRef.current) {
+          socketRef.current.emit("iceCandidate", { candidate: event.candidate, to: incomingCall.from });
+        }
+      };
+
+      await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.signal));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      socketRef.current.emit("answerCall", { signal: answer, to: incomingCall.from });
+      setIncomingCall(null);
+    } catch (err) {
+      console.error("acceptCall error:", err);
+      endCallCleanup();
+    }
+  };
+
+  const rejectCall = () => { socketRef.current.emit("rejectCall", { to: incomingCall.from }); setIncomingCall(null); };
+
+  // handle beforeunload (refresh/close)
+  useEffect(() => {
+    const onBeforeUnload = (e) => {
+      if (socketRef.current) {
+        socketRef.current.emit("endCall", { from: currentUserId, to: otherUserId });
       }
+      endCallCleanup();
     };
-
-    await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.signal));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-
-    socketRef.current.emit("answerCall", { signal: answer, to: incomingCall.from });
-    setIncomingCall(null);
-  };
-
-  // ✅ Reject incoming call
-  const rejectCall = () => {
-    socketRef.current.emit("rejectCall", { to: incomingCall.from });
-    setIncomingCall(null);
-  };
-
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUserId, otherUserId]);
 
   // --- Render messages ---
   const renderMessage = (m) => {
@@ -346,39 +307,42 @@ const endCall = (remote = false) => {
     return null;
   };
 
+  const pushNotification = (text) => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, text }]);
+    try { notificationSound.current?.play(); } catch {}
+    setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), 3000);
+  };
+
   return (
     <div className="user-chat">
-       {callStatusPopup && (
-      <div className="call-status-popup">
-        <p>{callStatusPopup.message}</p>
+      {callStatusPopup && (
+        <div className="call-status-popup">
+          <p>{callStatusPopup.message}</p>
+        </div>
+      )}
+      <div className="chat-header">
+        <button className="back-btn" onClick={() => navigate(-1)}>
+          <FaArrowLeft />
+        </button>
+
+        <div className="user-info">
+          <span className="username">{posterName || otherUserId}</span>
+          <span className={`user-status ${otherUserOnline ? "online" : "offline"}`}>
+            {otherUserOnline ? "Online" : "Offline"}
+          </span>
+        </div>
+
+        {inCall ? (
+          <button className="end-btn" onClick={() => endCall(false)}>
+            <FaPhoneSlash />
+          </button>
+        ) : (
+          <button className="video-btn" onClick={startVideoCall}>
+            <FaVideo />
+          </button>
+        )}
       </div>
-    )}
-    <div className="chat-header">
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        <FaArrowLeft />
-      </button>
-
-      <div className="user-info">
-        <span className="username">{posterName || otherUserId}</span>
-        <span className={`user-status ${otherUserOnline ? "online" : "offline"}`}>
-          {otherUserOnline ? "Online" : "Offline"}
-        </span>
-      </div>
-
-{/* 🔹 Video Call Button in Header */}
-{inCall ? (
-  <button className="end-btn" onClick={endCall}>
-    <FaPhoneSlash />
-  </button>
-) : (
-  <button className="video-btn" onClick={startVideoCall}>
-    <FaVideo />
-  </button>
-)}
-
-
-
-    </div>
 
       <div className="chat-body">
         {messages.map((m, idx) => (
@@ -397,13 +361,13 @@ const endCall = (remote = false) => {
         ))}
         <div ref={messagesEndRef} />
       </div>
-{/* 🔹 VIDEO DISPLAY SECTION */}
-{inCall && (
-  <div className="video-call-container">
-    <video ref={localVideoRef} autoPlay muted playsInline className="local-video" />
-    <video ref={remoteVideoRef} autoPlay playsInline className="remote-video" />
-  </div>
-)}
+
+      {inCall && (
+        <div className="video-call-container">
+          <video ref={localVideoRef} autoPlay muted playsInline className="local-video" />
+          <video ref={remoteVideoRef} autoPlay playsInline className="remote-video" />
+        </div>
+      )}
 
       <div className="chat-input">
         <div className="input-row">
@@ -435,7 +399,7 @@ const endCall = (remote = false) => {
           </div>
         )}
       </div>
-            {/* ✅ Incoming Call Popup */}
+
       {incomingCall && !inCall && (
         <div className="incoming-call-popup">
           <p>{incomingCall.name || "Someone"} is calling...</p>
@@ -445,6 +409,14 @@ const endCall = (remote = false) => {
           </div>
         </div>
       )}
+
+      <div className="notification-container">
+        {notifications.map((n) => (
+          <div key={n.id} className="notification-toast">
+            {n.text}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
