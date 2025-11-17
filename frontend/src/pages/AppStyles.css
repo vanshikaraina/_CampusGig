@@ -619,19 +619,20 @@ mai ye update krde */
 
 /* Container */
 .my-jobs-container {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 0 20px;
+  max-width: 950px;                /* slightly wider for cleaner spacing */
+  margin: 50px auto;               /* better breathing space */
+  padding: 0 24px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Heading */
 .my-jobs-container h2 {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
-  margin-bottom: 25px;
+  margin-bottom: 32px;
   text-align: center;
-  color: #1f2937; /* dark gray */
+  color: #1f2937;
+  letter-spacing: -0.3px;          /* cleaner Apple-like typography */
 }
 
 /* Job List */
@@ -640,8 +641,8 @@ mai ye update krde */
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); 
+  gap: 26px;                        /* increased gap for cleaner layout */
 }
 
 /* Job Card */
@@ -650,29 +651,36 @@ mai ye update krde */
   flex-direction: column;
   justify-content: space-between;
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  padding: 18px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 14px;
+  
+  /* cleaner shadow */
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  
+  padding: 20px;
+  border: 1px solid #e5e7eb;        /* subtle Apple-style border */
+  
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .my-job-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.09);
 }
 
 /* Job Info */
 .my-job-card h3 {
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   color: #111827;
+  line-height: 1.3;
 }
 
 .my-job-card p {
-  margin: 4px 0;
+  margin: 5px 0;
   color: #374151;
-  font-size: 14px;
+  font-size: 14.5px;
+  line-height: 1.45;
 }
 
 .my-job-card strong {
@@ -683,65 +691,66 @@ mai ye update krde */
 /* Status Badge */
 .status-badge {
   display: inline-block;
-  padding: 5px 14px;
+  width: fit-content;
+  padding: 6px 16px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   color: #fff;
-  margin-top: 8px;
-  text-transform: uppercase;
+  margin-top: 10px;
+  letter-spacing: 0.4px;
 }
 
-.status-pending { background-color: #f59e0b; }   /* orange */
-.status-accepted { background-color: #3b82f6; }  /* blue */
-.status-completed { background-color: #10b981; } /* green */
-.status-rated { background-color: #8b5cf6; }     /* purple */
-.status-unknown { background-color: #6b7280; }   /* gray */
+.status-pending { background-color: #f59e0b; }
+.status-accepted { background-color: #2563eb; }
+.status-completed { background-color: #059669; }
+.status-rated { background-color: #7c3aed; }
+.status-unknown { background-color: #6b7280; }
 
 /* Rating Input */
 .my-job-card input[type="number"] {
   border: 1px solid #d1d5db;
   border-radius: 8px;
-  padding: 6px 10px;
-  width: 70px;
-  outline: none;
+  padding: 7px 10px;
+  width: 75px;
   font-weight: 500;
   font-size: 14px;
-  transition: border-color 0.2s ease;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .my-job-card input[type="number"]:focus {
   border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
 }
 
 /* Buttons */
 .my-job-card button {
-  padding: 6px 14px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
   background-color: #7c3aed;
   color: #fff;
   border: none;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  margin-top: 8px;
-  transition: background 0.2s ease, transform 0.2s ease;
+  margin-top: 10px;
+  transition: background 0.22s ease, transform 0.22s ease;
 }
 
 .my-job-card button:hover {
   background-color: #6d28d9;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 /* Complete Button */
 .btn-complete {
   background-color: #10b981;
-  margin-left: 8px;
 }
 
 .btn-complete:hover {
   background-color: #059669;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 /* Loading Text */
@@ -752,8 +761,12 @@ mai ye update krde */
   margin-top: 40px;
 }
 
-/* Responsive */
+/* Responsive Fixes */
 @media (max-width: 640px) {
+  .my-job-card {
+    padding: 16px;
+  }
+
   .my-job-card input[type="number"] {
     width: 100%;
   }
@@ -763,6 +776,108 @@ mai ye update krde */
     margin-left: 0;
   }
 }
+
+/* 🔵 1. Job Title (Graphic Designer) */
+.my-job-card h3 {
+  color: #0a2a78;       /* Dark blue */
+  font-weight: 500;     /* Not bold */
+}
+
+/* ⚫ 2. Description (Create engaging...) */
+.my-job-card p:nth-of-type(1) {
+  color: #4f4d4d;          /* Black */
+  font-weight: 400;     /* Not bold */
+}
+
+/* 🟢 3. Posted On (date) */
+.my-job-card p:nth-of-type(2) {
+  color: #16a34a;       /* Green */
+  font-weight: 600;
+}
+
+/* 🔥 4. Status line — only the WORD "Status:" becomes bold */
+.my-job-card p:nth-of-type(3) {
+  color: #000;
+  font-weight: 400;     /* full line normal */
+}
+
+.my-job-card p:nth-of-type(3) strong {
+  font-weight: 800;     /* only Status: bold */
+}
+
+
+/* Rating Card */
+.rating-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 14px;
+}
+
+/* Header */
+.rating-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+/* Stars row */
+.stars-wrapper {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.star-icon {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.star-icon:hover {
+  transform: scale(1.13);
+}
+
+/* Textarea */
+.rating-textarea {
+  width: 100%;
+  min-height: 70px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  background: #ffffff;
+  transition: border 0.2s ease;
+}
+
+.rating-textarea:focus {
+  border-color: #3b82f6;
+}
+
+/* Button */
+/* .rating-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.rating-btn:hover {
+  background: #1d4ed8;
+} */
+
 
 /* Container for sort dropdown */
 .sort-container {
@@ -969,4 +1084,35 @@ mai ye update krde */
 .nav-filter:focus {
   border-color: #007bff;
   box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+/* Professional empty state message */
+.no-jobs-msg {
+  margin: 40px auto;
+  padding: 24px 28px;
+  max-width: 520px;
+
+  background: #f8f9fc;               /* clean light background */
+  border: 1px solid #dcdfe6;         /* light professional border */
+  border-radius: 12px;
+
+  color: #4b5563;                    /* neutral, corporate text color */
+  font-size: 1.05rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.5;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06); /* subtle corporate shadow */
+}
+
+/* Optional subtle icon style */
+.no-jobs::before {
+  content: "⚠️";
+  font-size: 1.2rem;
+  opacity: 0.8;
 }

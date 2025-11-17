@@ -108,7 +108,7 @@ export default function AcceptedJobs() {
       <Toaster position="top-right" />
       <h2>My Accepted Jobs</h2>
       {acceptedJobs.length === 0 ? (
-        <p>You haven’t accepted any jobs yet.</p>
+        <p className="no-jobs-msg">You haven’t accepted any jobs yet.</p>
       ) : (
         <ul>
           {acceptedJobs.map((jobItem) => {
@@ -170,7 +170,7 @@ export default function AcceptedJobs() {
 
       <h2 style={{ marginTop: "2rem" }}>My Completed Jobs</h2>
       {completedJobs.length === 0 ? (
-        <p>No jobs completed yet.</p>
+        <p className="no-jobs-msg">No jobs completed yet.</p>
       ) : (
         <ul>
           {completedJobs.map((jobItem) => {

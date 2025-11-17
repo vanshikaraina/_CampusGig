@@ -695,14 +695,14 @@ export default function JobsList({ user, setUser }) {
       {sortedRecommendedJobs.length > 0 ? (
         <ul>{sortedRecommendedJobs.map(renderJobCard)}</ul>
       ) : (
-        <p>No recommended jobs based on your skills.</p>
+        <p className="no-jobs-msg">No recommended jobs based on your skills.</p>
       )}
 
       <h2>All Jobs</h2>
       {sortedAllJobs.length > 0 ? (
         <ul>{sortedAllJobs.map(renderJobCard)}</ul>
       ) : (
-        <p>No other jobs available right now.</p>
+        <p className="no-jobs-msg">No other jobs available right now.</p>
       )}
 
       {/* 🆕 Bid modal */}
