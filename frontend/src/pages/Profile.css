@@ -380,77 +380,23 @@
   box-shadow: 0 4px 8px rgba(30, 58, 138, 0.2);
 }
 
-/* ===============================
-   Activity Bar
-================================= */
-/* Container for the whole calendar section */
-.calendar-container {
-  background: #fff;
-  padding: 20px 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-top: 20px;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.ad-banner {
+  display: block;
+  margin-top: 18px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.calendar-container:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+.ad-banner img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-/* Title styling */
-.calendar-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #4b0082;
-  text-align: left;
-}
-
-/* Activity calendar alignment */
-.react-activity-calendar {
-  margin: 0 auto;
-}
-
-/* Month label section */
-.month-labels {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  padding: 0 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #555;
-  letter-spacing: 0.5px;
-}
-
-/* Each month label */
-.month-label {
-  flex: 1;
-  text-align: center;
-  color: #6b7280;
-  /* soft gray */
-  font-weight: 500;
-}
-
-/* Light mode colors for the calendar blocks */
-.react-activity-calendar rect {
-  rx: 3px;
-  /* rounded squares */
-  transition: all 0.2s ease-in-out;
-}
-
-.react-activity-calendar rect:hover {
-  transform: scale(1.1);
-  stroke: #6d28d9;
-  stroke-width: 1px;
-}
-
-/* No data message */
-.calendar-container p {
-  color: #888;
-  font-size: 0.95rem;
-  padding: 12px;
+.ad-banner:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
 }

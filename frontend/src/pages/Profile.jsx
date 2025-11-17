@@ -249,12 +249,18 @@ const Profile = () => {
             )}
           </div>
         </div>
-
-        <div className="timeline-section">
-          {/* <h3>Activity Timeline</h3> */}
-          <Timeline activities={activities} />
-        </div>
-
+        {/* Ad Banner */}
+<a 
+  href="https://ruul.io/blog/freelancing-ideas-and-tips-for-students" 
+  target="_blank" 
+  rel="noopener noreferrer"
+  className="ad-banner"
+>
+  <img
+    src="https://www.refrens.com/grow/wp-content/uploads/2022/03/10-tips-to-become-a-better-freelancer.png"   // replace with your vertical image
+    alt="Freelancing Tips"
+  />
+</a>
 
       </div>
 
@@ -528,45 +534,9 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-
-            <div className="calendar-container">
-              <h3 className="calendar-title">Activity Overview</h3>
-
-              {calendarData && calendarData.length > 0 ? (
-                <>
-                  <div className="month-labels">
-                    {Array.from({ length: 12 }).map((_, i) => {
-                      const date = new Date();
-                      date.setMonth(date.getMonth() - (11 - i));
-                      return (
-                        <span key={i} className="month-label">
-                          {date.toLocaleString("default", { month: "short" })}
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                  <ActivityCalendar
-                    data={calendarData}
-                    labels={{
-                      legend: { less: "Less", more: "More" },
-                      totalCount: "{{count}} activities in {{year}}",
-                    }}
-                    theme={{
-                      light: ['#f3e8ff', '#d8b4fe', '#c084fc', '#a855f7', '#7e22ce'],
-                      dark: ['#2e1065', '#4c1d95', '#6d28d9', '#8b5cf6', '#c4b5fd'],
-                    }}
-                    colorScheme="light"
-                    hideColorLegend={false}
-                    blockSize={15}
-                    blockMargin={4}
-                    fontSize={14}
-                  />
-
-                </>
-              ) : (
-                <p className="text-gray-500 italic">No activity data yet</p>
-              )}
+            <div className="timeline-section">
+              {/* <h3>Activity Timeline</h3> */}
+              <Timeline activities={activities} />
             </div>
 
           </>
