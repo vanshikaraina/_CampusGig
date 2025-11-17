@@ -173,20 +173,57 @@ export default function UserChat({ currentUserId: propCurrentUserId }) {
       console.error("Microphone access denied", err);
     }
   };
-  const stopRecording = () => mediaRecorder?.stop() && setRecording(false);
+  const stopRecording = () => {
+  if (!mediaRecorder) return;
+
+  // ✅ FIX: End UI state immediately so button/timer reset instantly
+  setRecording(false);
+  clearInterval(timerRef.current);
+
+  try {
+    mediaRecorder.stop();
+  } catch (e) {
+    console.error("stopRecording error", e);
+  }
+};
+
   const cancelRecording = () => { setAudioBlob(null); setRecording(false); clearInterval(timerRef.current); };
   const sendAudio = async () => {
-    if (!audioBlob) return;
-    const file = new File([audioBlob], `voice-${Date.now()}.webm`, { type: "audio/webm" });
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await api.post("/chat/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
-      const msgData = { posterId, acceptedUserId, jobId, senderId: currentUserId, file: res.data.url, fileType: "audio", text: "" };
-      await api.post("/chat", msgData);
-      setAudioBlob(null);
-    } catch (err) { console.error("Voice message upload failed", err); }
-  };
+  if (!audioBlob) return;
+
+  const file = new File([audioBlob], `voice-${Date.now()}.webm`, { type: "audio/webm" });
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await api.post("/chat/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    const msgData = {
+      posterId,
+      acceptedUserId,
+      jobId,
+      senderId: currentUserId,
+      file: res.data.url,
+      fileType: "audio",
+      text: ""
+    };
+
+    // Save to DB
+    // await api.post("/chat", msgData);
+
+    // ✅ FIX: Send instantly to socket so both sides see audio without refresh
+    socketRef.current.emit("sendMessage", msgData);
+
+    // Clear preview UI
+    setAudioBlob(null);
+
+  } catch (err) {
+    console.error("Voice message upload failed", err);
+  }
+};
+
 
   const endCallCleanup = () => {
     try {
