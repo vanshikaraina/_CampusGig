@@ -1,6 +1,8 @@
 // frontend/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Landing from "./pages/Landing.jsx"; // ✅ Import the landing page
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
@@ -53,6 +55,18 @@ export default function App() {
             />
           </Routes>
         </div>
+
+         {/* Toast notifications */}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored"
+        />
 
         {/* Chat widget appears on all screens */}
         <ChatWidget />

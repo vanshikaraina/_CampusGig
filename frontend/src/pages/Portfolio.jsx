@@ -1,30 +1,25 @@
-// src/pages/Portfolio.jsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify"; 
 import "./Portfolio.css";
 
 const Portfolio = () => {
-  const { userId: paramUserId } = useParams(); // from /portfolio/:userId
-  const { user } = useAuth(); // logged-in user from context
+  const { userId } = useParams(); 
+  const { user } = useAuth(); 
   const loggedInUserId = user?._id;
-
-  // If URL doesn't provide a userId, use logged-in user's id
-  const userId = paramUserId || loggedInUserId;
 
   const [projects, setProjects] = useState([]);
   const [form, setForm] = useState({ title: "", description: "", link: "" });
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
   const [ownerName, setOwnerName] = useState("");
+  const [hasFetched, setHasFetched] = useState(false); // ✅ prevent duplicate toast
 
-  // check if I'm viewing my own portfolio
   const isOwner = loggedInUserId === userId;
 
-  // fetch portfolio + owner name
   const fetchPortfolio = async () => {
-    if (!userId) return; // defensive check
     try {
       const res = await api.get(`/portfolio/${userId}`);
       setProjects(res.data.projects || []);
@@ -32,6 +27,9 @@ const Portfolio = () => {
     } catch (err) {
       console.error("Fetch error:", err);
       setError("Failed to load portfolio");
+      if (!hasFetched) toast.error("Failed to load portfolio"); // only once
+    } finally {
+      setHasFetched(true);
     }
   };
 
@@ -39,7 +37,6 @@ const Portfolio = () => {
     fetchPortfolio();
   }, [userId]);
 
-  // add project
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -57,14 +54,15 @@ const Portfolio = () => {
 
       setForm({ title: "", description: "", link: "" });
       setFile(null);
-      fetchPortfolio(); // refresh projects
+      toast.success("Project added successfully"); 
+      fetchPortfolio(); 
     } catch (err) {
       console.error("Submit error:", err);
       setError("Failed to add project");
+      toast.error("Failed to add project"); 
     }
   };
 
-  // delete project
   const handleDelete = async (id) => {
     try {
       await api.delete(`/portfolio/${id}`, {
@@ -73,9 +71,11 @@ const Portfolio = () => {
         },
       });
       setProjects(projects.filter((p) => p._id !== id));
+      toast.success("Project deleted successfully"); 
     } catch (err) {
       console.error("Delete error:", err);
       setError("Failed to delete project");
+      toast.error("Failed to delete project"); 
     }
   };
 
@@ -95,7 +95,9 @@ const Portfolio = () => {
           <textarea
             placeholder="Project Description"
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
             required
           />
           <input

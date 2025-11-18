@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { toast } from "react-toastify"; // keep toast for future user actions if needed
 import "./MyBids.css";
 
 export default function MyBids() {
   const [bids, setBids] = useState([]);
   const [filteredBids, setFilteredBids] = useState([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
-  const [filterStatus, setFilterStatus] = useState("all"); // new
-  const [sortByAmount, setSortByAmount] = useState(""); // "asc" or "desc"
+  const [filterStatus, setFilterStatus] = useState("all"); // filter
+  const [sortByAmount, setSortByAmount] = useState(""); // sort
 
   useEffect(() => {
     async function fetchBids() {
@@ -15,9 +16,10 @@ export default function MyBids() {
         const { data } = await api.get("/jobs/my-bids");
         setBids(data.bids);
         setTotalEarnings(data.totalEarnings);
-        setFilteredBids(data.bids); // initial
+        // ✅ Removed toast on initial load
       } catch (err) {
         console.error(err);
+        toast.error("Failed to load bids"); // keep error toast
       }
     }
     fetchBids();
@@ -48,34 +50,37 @@ export default function MyBids() {
       <h3 className="total-earnings">Total Earnings: ₹{totalEarnings}</h3>
 
       {/* Filter & Sort Controls */}
-      <div className="filter-sort-controls">
-        <label>
-          Filter by Status:
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            {/* <option value="completed">Completed</option> */}
-            <option value="rejected">Rejected</option>
-          </select>
-        </label>
+      {bids.length > 0 && (
+        <div className="filter-sort-controls">
+          <label>
+            Filter by Status:
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Accepted</option>
+              <option value="completed">Completed</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </label>
 
-        <label>
-          Sort by Amount:
-          <select
-            value={sortByAmount}
-            onChange={(e) => setSortByAmount(e.target.value)}
-          >
-            <option value="">None</option>
-            <option value="asc">Low → High</option>
-            <option value="desc">High → Low</option>
-          </select>
-        </label>
-      </div>
+          <label>
+            Sort by Amount:
+            <select
+              value={sortByAmount}
+              onChange={(e) => setSortByAmount(e.target.value)}
+            >
+              <option value="">None</option>
+              <option value="asc">Low → High</option>
+              <option value="desc">High → Low</option>
+            </select>
+          </label>
+        </div>
+      )}
 
+      {/* Bids Display */}
       {filteredBids.length === 0 ? (
         <p>No bids to display.</p>
       ) : (

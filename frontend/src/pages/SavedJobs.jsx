@@ -1,4 +1,4 @@
-// src/pages/SavedJobs.jsx
+//frontend/pages/SavedJobs.jsx
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./SavedJobs.css";
@@ -12,6 +12,7 @@ export default function SavedJobs() {
       try {
         const res = await api.get("/users/saved-jobs");
         setJobs(res.data);
+        // ✅ Removed toast on initial load
       } catch (err) {
         console.error("Error fetching saved jobs", err);
         toast.error("Failed to load saved jobs");
@@ -24,7 +25,7 @@ export default function SavedJobs() {
     try {
       await api.delete(`/users/unsave-job/${jobId}`);
       setJobs((prev) => prev.filter((job) => job._id !== jobId));
-      toast.info("❌ Job removed from saved list");
+      toast.info("❌ Job removed from saved list"); // only triggers on unsave
     } catch (err) {
       console.error("Error unsaving job:", err);
       toast.error("Failed to unsave job. Try again.");
@@ -33,7 +34,7 @@ export default function SavedJobs() {
 
   return (
     <div className="saved-jobs-container">
-      <h2>  Saved Jobs</h2>
+      <h2>Saved Jobs</h2>
       {jobs.length === 0 ? (
         <p>You haven’t saved any jobs yet.</p>
       ) : (
@@ -45,8 +46,6 @@ export default function SavedJobs() {
               <p>
                 <strong>Budget:</strong> ₹{job.budget || job.price || "Not specified"}
               </p>
-
-              {/* 🆕 Unsave button */}
               <button
                 className="unsave-btn"
                 onClick={() => handleUnsaveJob(job._id)}

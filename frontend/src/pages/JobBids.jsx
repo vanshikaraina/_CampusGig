@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { selectWinningBid, completePayment } from "../services/jobs"; // ✅ added payment helpers
+import { selectWinningBid, completePayment } from "../services/jobs";
 import "./AppStyles.css";
 import axios from "axios";
+import { toast } from "react-toastify";  // ✅ Toastify added
 
 export default function JobBids() {
   const { jobId } = useParams();
@@ -15,7 +16,7 @@ export default function JobBids() {
   const [payoutRef, setPayoutRef] = useState("");
   const navigate = useNavigate();
 
-  // Fetch job details + bids (keep original logic)
+  // Fetch job + bids
   useEffect(() => {
     const fetchBids = async () => {
       try {
@@ -27,41 +28,48 @@ export default function JobBids() {
         setBids(res.data);
       } catch (err) {
         console.error("Error fetching bids:", err.response?.data || err.message);
+        toast.error("Failed to load bids");
       } finally {
         setLoading(false);
       }
     };
+
     fetchBids();
   }, [jobId]);
 
-  // ✅ Razorpay + select bid + pay
+  // Select Bid
   const handleSelectBid = async (bidId) => {
     try {
-      await selectWinningBid(jobId, bidId); // just mark as accepted
+      await selectWinningBid(jobId, bidId);
+
       const res = await api.get(`/jobs/${jobId}`);
       setJob(res.data);
+
       const bidsRes = await api.get(`/jobs/${jobId}/bids`);
       setBids(bidsRes.data);
-      alert("Bid selected successfully!");
+
+      toast.success("Bid selected successfully!");
     } catch (err) {
       console.error("Error selecting bid:", err?.response?.data || err.message);
-      alert(err?.response?.data?.message || err.message || "Failed to select bid");
+      toast.error(err?.response?.data?.message || "Failed to select bid");
     }
   };
 
+  // Pay Now
   const handlePayNow = async (bidId) => {
     try {
       setPaying(true);
+
       const { data } = await axios.post(
-  `http://localhost:5000/api/payment/jobs/${jobId}/create-payment`,
-  { bidId },
-  { withCredentials: true }   // ✅ include cookies for auth
-);
+        `http://localhost:5000/api/payment/jobs/${jobId}/create-payment`,
+        { bidId },
+        { withCredentials: true }
+      );
 
       const { payment } = data;
 
       if (!payment) {
-        alert("Payment order was not created.");
+        toast.error("Payment order could not be created");
         return;
       }
 
@@ -71,46 +79,52 @@ export default function JobBids() {
         amount: payment.amount,
         currency: payment.currency || "INR",
         name: "CampusGig",
-        description: "Escrow charge to job poster",
+        description: "Escrow charge",
         handler: async () => {
-          alert("Payment initiated. Awaiting confirmation…");
+          toast.info("Payment processing…");
+
           const res = await api.get(`/jobs/${jobId}`);
           setJob(res.data);
+
           const bidsRes = await api.get(`/jobs/${jobId}/bids`);
           setBids(bidsRes.data);
+
+          toast.success("Payment completed!");
         },
         theme: { color: "#2563eb" },
       });
 
       rzp.on("payment.failed", (resp) => {
         console.error("Payment failed:", resp);
-        alert(`Payment Failed: ${resp.error?.description || "Unknown reason"}`);
+        toast.error(`Payment Failed: ${resp.error?.description || "Unknown error"}`);
       });
 
       rzp.open();
     } catch (err) {
       console.error("Error starting payment:", err);
-      alert(err?.response?.data?.message || err.message || "Failed to start payment");
+      toast.error(err?.response?.data?.message || "Failed to start payment");
     } finally {
       setPaying(false);
     }
   };
 
-
-  // ✅ Complete and release payment (optional)
+  // Complete + Release
   const handleCompleteAndRelease = async () => {
     try {
       if (!payoutRef.trim()) {
-        if (!confirm("No payout reference entered. Proceed anyway?")) return;
+        toast.warning("No payout reference entered — proceeding anyway.");
       }
+
       await completePayment(jobId, payoutRef.trim());
       setPayoutRef("");
+
       const res = await api.get(`/jobs/${jobId}`);
       setJob(res.data);
-      alert("Job marked completed & payout recorded");
+
+      toast.success("Job marked completed & payout released!");
     } catch (err) {
       console.error("Complete-payment error:", err?.response?.data || err.message);
-      alert(err?.response?.data?.message || err.message || "Failed to complete");
+      toast.error(err?.response?.data?.message || "Failed to complete and release");
     }
   };
 
@@ -130,24 +144,19 @@ export default function JobBids() {
           <p><strong>Budget:</strong> ₹{job.price}</p>
           <p>
             <strong>Deadline:</strong>{" "}
-            {job.deadline
-              ? new Date(job.deadline).toLocaleDateString()
-              : "No deadline"}
+            {job.deadline ? new Date(job.deadline).toLocaleDateString() : "No deadline"}
           </p>
-          <p>
-            <strong>Status:</strong> {job.status}
-          </p>
+          <p><strong>Status:</strong> {job.status}</p>
           <p>
             <strong>Payment:</strong>{" "}
             {job.payment?.status || "NONE"}{" "}
-            {job.payment?.heldAmount
-              ? `(₹${(job.payment.heldAmount / 100).toFixed(2)})`
-              : ""}
+            {job.payment?.heldAmount ? `(₹${(job.payment.heldAmount / 100).toFixed(2)})` : ""}
           </p>
         </div>
       )}
 
       <h3 style={{ marginTop: "1.5rem" }}>Bids</h3>
+
       {bids.length === 0 ? (
         <p>No bids yet for this job.</p>
       ) : (
@@ -155,12 +164,9 @@ export default function JobBids() {
           {bids.map((bid) => (
             <li key={bid._id} className="job-card">
               <p>
-                <strong>Student:</strong> {bid.student?.name} (
-                {bid.student?.email})
+                <strong>Student:</strong> {bid.student?.name} ({bid.student?.email})
               </p>
-              <p>
-                <strong>Bid Amount:</strong> ₹{bid.bidAmount}
-              </p>
+              <p><strong>Bid Amount:</strong> ₹{bid.bidAmount}</p>
               <p>
                 <strong>Status:</strong>{" "}
                 {bid.status === "pending" ? "⏳ Pending" : bid.status}
@@ -174,8 +180,7 @@ export default function JobBids() {
                   View Portfolio
                 </button>
 
-                {/* Show Select Bid button only if not accepted/rejected */}
-                {/* Select Bid button for pending bids */}
+                {/* Select Bid Button */}
                 {bid.status === "pending" && !isPaid && (
                   <button
                     className="btn-accept"
@@ -186,7 +191,7 @@ export default function JobBids() {
                   </button>
                 )}
 
-                {/* Pay Now button only for accepted bids */}
+                {/* Pay Now */}
                 {bid.status === "accepted" && !isPaid && (
                   <button
                     className="btn-accept"
@@ -197,29 +202,30 @@ export default function JobBids() {
                   </button>
                 )}
 
-
+                {/* Paid Status */}
                 {bid.status === "accepted" && isPaid && (
                   <span style={{ color: "green", fontWeight: "bold", marginLeft: 12 }}>
-                    ✅ Selected (paid)
+                    ✅ Selected (Paid)
                   </span>
                 )}
+
+                {/* Rejected */}
                 {bid.status === "rejected" && (
                   <span style={{ color: "red", fontWeight: "bold" }}>❌ Rejected</span>
                 )}
               </div>
-
             </li>
           ))}
         </ul>
       )}
 
-      {/* ✅ Release payout section (after payment captured) */}
+      {/* Release Payout */}
       {isPaid && !isCompleted && (
         <>
           <h3 style={{ marginTop: "1.5rem" }}>Release payout</h3>
           <div style={{ display: "flex", gap: 8 }}>
             <input
-              placeholder="Payout reference (UTR / note)"
+              placeholder="Payout reference (UTR / Note)"
               value={payoutRef}
               onChange={(e) => setPayoutRef(e.target.value)}
             />

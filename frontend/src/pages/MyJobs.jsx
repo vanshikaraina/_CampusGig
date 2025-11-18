@@ -1,11 +1,10 @@
-// src/pages/MyJobs.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Navbar from "./Navbar";
 import { useAuth } from "../context/AuthContext";
 import { FaStar } from "react-icons/fa";
-import { toast } from "react-toastify"; // ✅ Correct import for react-toastify
+import { toast } from "react-toastify"; 
 import "./AppStyles.css";
 
 const MyJobs = ({ onProfileUpdate }) => {
@@ -14,6 +13,7 @@ const MyJobs = ({ onProfileUpdate }) => {
   const [jobsLoading, setJobsLoading] = useState(true);
   const [ratingData, setRatingData] = useState({});
   const navigate = useNavigate();
+  const [hasFetched, setHasFetched] = useState(false); // ✅ to prevent duplicate toast
 
   // Fetch jobs posted by user
   const fetchJobs = async () => {
@@ -22,9 +22,10 @@ const MyJobs = ({ onProfileUpdate }) => {
       setJobs(res.data);
     } catch (err) {
       console.error("Error fetching my jobs:", err);
-      toast.error("Failed to load your jobs.");
+      if (!hasFetched) toast.error("Failed to load your jobs."); // only once
     } finally {
       setJobsLoading(false);
+      setHasFetched(true);
     }
   };
 
@@ -48,10 +49,9 @@ const MyJobs = ({ onProfileUpdate }) => {
       });
 
       toast.success("Thank you for your feedback!");
-      fetchJobs(); // refresh jobs after rating
+      fetchJobs(); 
       if (onProfileUpdate) onProfileUpdate();
 
-      // reset rating form for this job
       setRatingData((prev) => ({
         ...prev,
         [assignedJobId]: { stars: 0, comment: "" },
@@ -59,6 +59,30 @@ const MyJobs = ({ onProfileUpdate }) => {
     } catch (err) {
       console.error("Error submitting rating:", err);
       toast.error("Failed to submit rating. Please try again.");
+    }
+  };
+
+  // Accept Bid
+  const handleAcceptBid = async (jobId, bidId) => {
+    try {
+      const res = await api.put(`/jobs/${jobId}/select/${bidId}`);
+      toast.success(res.data.message || "Bid accepted successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
+      fetchJobs(); 
+    } catch (err) {
+      console.error("Error accepting bid:", err);
+      toast.error(err.response?.data?.message || "Failed to accept bid.", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
     }
   };
 
@@ -100,25 +124,22 @@ const MyJobs = ({ onProfileUpdate }) => {
                   </p>
                 </div>
 
-                {/* View Bids Button */}
                 <div style={{ marginTop: "10px" }}>
                   <button
                     className="btn-accept"
                     onClick={() => {
                       navigate(`/jobs/${job._id}/bids`);
-                      toast.info("Opening bids...");
+                      // Removed toast here to prevent duplicate
                     }}
                   >
                     View Bids
                   </button>
                 </div>
 
-                {/* Rating Section (for completed jobs) */}
                 {job.acceptedBy && job.status === "completed" && (
                   <div className="rating-card">
                     <h4 className="rating-header">Rate Completed Work</h4>
 
-                    {/* Star Rating */}
                     <div className="stars-wrapper">
                       {[...Array(5)].map((_, i) => {
                         const ratingValue = i + 1;
@@ -166,7 +187,6 @@ const MyJobs = ({ onProfileUpdate }) => {
                       })}
                     </div>
 
-                    {/* Review Textbox */}
                     <textarea
                       className="rating-textarea"
                       placeholder="Write a short review..."
@@ -182,7 +202,6 @@ const MyJobs = ({ onProfileUpdate }) => {
                       }
                     />
 
-                    {/* Submit Button */}
                     <button
                       className="rating-btn"
                       onClick={() => handleRatingSubmit(job._id)}
