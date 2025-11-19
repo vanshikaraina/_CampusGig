@@ -20,16 +20,21 @@ export default function Landing() {
   return (
     <div className="landing-page">
       {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-text">
-          <h1>Pitch Your Gigs. Showcase Your Talent.</h1>
-          <p>Connect with clients, grow your network, and get hired faster.</p>
-          <button onClick={() => navigate("/jobs")}>Explore Jobs</button>
-        </div>
-        <div className="hero-image">
-          <img src="https://cdn7.dissolve.com/p/D430_50_041/D430_50_041_1200.jpg" alt="Creative Work" />
-        </div>
-      </section>
+      <section className="hero" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "80px 50px", background: "#f5f7fa" }}>
+  <div className="hero-text" style={{ maxWidth: "45%" }}>
+    <h1>Pitch Your Gigs. Showcase Your Talent.</h1>
+    <p>Connect with clients, grow your network, and get hired faster.</p>
+    <button onClick={() => navigate("/jobs")} style={{ padding: "12px 20px", fontSize: "16px", cursor: "pointer", backgroundColor: "#4f46e5", color: "white", border: "none", borderRadius: "6px" }}>Explore Jobs</button>
+  </div>
+
+  <div className="hero-images" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px", maxWidth: "50%" }}>
+    <img src="https://cdn7.dissolve.com/p/D430_50_041/D430_50_041_1200.jpg" alt="Creative Work" style={{ width: "100%", borderRadius: "12px" }} />
+    <img src="https://www.chitkara.edu.in/cbs/wp-content/uploads/2022/11/integrated.jpg" alt="Team Collaboration" style={{ width: "100%", borderRadius: "12px" }} />
+    <img src="https://www.chitkara.edu.in/cbs/wp-content/uploads/2025/05/BBA-Professional-Program-Chitkara-Business-School.jpg" alt="Digital Skills" style={{ width: "100%", borderRadius: "12px" }} />
+    <img src="https://www.chitkara.edu.in/blogs/wp-content/uploads/2025/01/Interns.jpg" alt="Remote Work" style={{ width: "100%", borderRadius: "12px" }} />
+  </div>
+</section>
+
     <section className="features">
     <h2>Why Choose CampusGig?</h2>
     <div className="features-grid">
@@ -50,6 +55,47 @@ export default function Landing() {
         </div>
     </div>
     </section>
+    <section className="stats">
+      <div className="stat-item">
+        <h2>10,000+</h2>
+        <p>Students Joined</p>
+      </div>
+      <div className="stat-item">
+        <h2>1,200+</h2>
+        <p>Active Gigs</p>
+      </div>
+      <div className="stat-item">
+        <h2>300+</h2>
+        <p>Verified Clients</p>
+      </div>
+    </section>
+
+    <section className="categories">
+      <h2>Popular Categories</h2>
+      <div className="category-grid">
+        {["Web Development","Graphic Design","Content Writing","Video Editing","Photography","App Development"].map((cat) => (
+          <div key={cat} className="category-card">{cat}</div>
+        ))}
+      </div>
+    </section>
+
+      <section className="how-it-works">
+        <h2>How CampusGig Works</h2>
+        <div className="steps">
+          <div className="step">
+            <span>1</span>
+            <p>Create an account on CampusGig</p>
+          </div>
+          <div className="step">
+            <span>2</span>
+            <p>Showcase your skills & portfolio</p>
+          </div>
+          <div className="step">
+            <span>3</span>
+            <p>Apply for gigs & get hired!</p>
+          </div>
+        </div>
+      </section>
 
     <section className="testimonials">
     <h2>What Students Say</h2>
