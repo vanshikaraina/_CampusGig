@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true }, // hashed password
-    role: { type: String, enum: ["employer", "freelancer"], required: true },
+    role: { type: String, enum: ["employer", "freelancer","admin"], required: true },
     collegeId: { type: String, required: true },
     branch: { type: String },
     college: { type: String },

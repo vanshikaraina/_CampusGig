@@ -13,6 +13,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@huggingface/inference": "^4.13.3",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -25,6 +27,7 @@
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
+    "openai": "^6.9.1",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.1"
   },

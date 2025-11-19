@@ -63,6 +63,11 @@ export const login = async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(400).json({ message: "Invalid credentials" });
 
+    // ✅ Check if admin route login
+    if (req.body.adminLogin && user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Not an admin." });
+    }
+
     generateToken(res, user._id);
 
     res.json({
