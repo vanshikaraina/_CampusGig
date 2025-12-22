@@ -556,3 +556,69 @@ footer .footer-bottom {
     flex-direction: column;
   }
 }
+
+/* Popup overlay */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Popup content */
+.popup-content {
+  background: #fff8f0; /* light newspaper vibe */
+  padding: 30px 40px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  position: relative;
+  animation: float 4s ease-in-out infinite, fadeIn 0.6s forwards;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #333;
+  border: 2px solid #f4c430; /* subtle highlight */
+}
+
+/* Close button */
+.popup-content .close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 22px;
+  cursor: pointer;
+  color: #f44336;
+}
+
+/* Floating/drifting animation */
+@keyframes float {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(10px, -10px); }
+  50%  { transform: translate(0, 0); }
+  75%  { transform: translate(-10px, 10px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Fade in effect */
+@keyframes fadeIn {
+  0% { opacity: 0; transform: scale(0.9);}
+  100% { opacity: 1; transform: scale(1);}
+}
+
+/* Popup button */
+.popup-content button {
+  padding: 12px 20px;
+  margin-top: 15px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}

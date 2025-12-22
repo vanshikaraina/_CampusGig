@@ -26,6 +26,10 @@ import AdminLayout from "./pages/AdminDashboard/AdminLayout";
 import AdminUsers from "./pages/AdminDashboard/AdminUsers";
 import AdminJobs from "./pages/AdminDashboard/AdminJobs";
 import AdminUserDetails from "./pages/AdminDashboard/AdminUserDetails"; // <-- NEW
+import DiscussionBoard from "./pages/DiscussionBoard.jsx";         {/* ⬅️ NEW import */}
+import SingleDiscussionPost from "./pages/SingleDiscussionPost.jsx"
+import NewsList from "./pages/NewsList";
+import NewsDetails from "./pages/NewsDetails";
 
 export default function App() {
   return (
@@ -58,6 +62,11 @@ export default function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/jobs" element={<AdminJobs />} />
             <Route path="/admin/users/:id" element={<AdminUserDetails />} />  {/* NEW */}
+            {/* ⬅️ Discussion Board Routes */}
+            <Route path="/discussion/:id" element={<SingleDiscussionPost />} />
+            <Route path="/discussion" element={<DiscussionBoard />} /> 
+            <Route path="/news" element={<NewsList />} />
+            <Route path="/news/:id" element={<NewsDetails />} />
 
             {/* Full-page chat route */}
             <Route

@@ -12,6 +12,8 @@ import userRoutes from "./routes/user.routes.js";          // ✅ added
 import webhooksRoutes from "./routes/webhooks.routes.js";  // ✅ Razorpay webhooks
 import paymentRoutes from "./routes/payment.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import discussionRoutes from "./routes/discussion.routes.js";
+import newsRoutes from "./routes/news.routes.js";
 
 const app = express();
 
@@ -53,6 +55,7 @@ app.use("/api/users", userRoutes);          // ✅ added user routes
 app.use("/api/payment/jobs", paymentRoutes);
 
 app.use("/api/admin", adminRoutes);
-
+app.use("/api/discussions", discussionRoutes);
+app.use("/api/news", newsRoutes);
 
 export default app;

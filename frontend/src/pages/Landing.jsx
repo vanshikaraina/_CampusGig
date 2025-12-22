@@ -176,7 +176,7 @@ export default function Landing() {
               &times;
             </span>
             <h3>🚀 New Feature Alert!</h3>
-            <p>Check out the latest real-time chat feature on CampusGig!</p>
+            <p>Floating discussion board & newspaper style updates are live! Check it out.</p>
             <button onClick={() => navigate("/jobs")}>Explore Jobs</button>
           </div>
         </div>

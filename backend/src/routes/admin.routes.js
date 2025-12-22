@@ -36,6 +36,7 @@ router.get("/jobs", auth, adminOnly, async (req, res) => {
   try {
     const jobs = await Job.find()
       .populate("postedBy", "name email")
+      .populate("acceptedBy", "name email")   // 🔥 UPDATED
       .lean();
 
     const ids = jobs.map(j => j._id);
@@ -48,7 +49,7 @@ router.get("/jobs", auth, adminOnly, async (req, res) => {
         ...job,
         status: match?.status || "pending",
         assignedJobId: match?._id || null,
-        acceptedBy: match?.student || null,
+        acceptedBy: match?.student || null,   // 🔥 UPDATED
       };
     });
 
@@ -77,22 +78,54 @@ router.get("/user/:id", auth, adminOnly, async (req, res) => {
 // ----------------------
 router.get("/user/:id/jobs", auth, adminOnly, async (req, res) => {
   try {
-    const posted = await Job.find({ postedBy: req.params.id }).lean();
+    const userId = req.params.id;
 
-    const assigned = await AssignedJob.find({ student: req.params.id })
-      .populate("job")
+    // 1️⃣ Jobs posted by user
+    const posted = await Job.find({ postedBy: userId })
+      .populate("postedBy", "name email")
+      .populate("acceptedBy", "name email")   // 🔥 UPDATED
       .lean();
 
-    const accepted = assigned
-      .filter(a => a.status === "accepted")
-      .map(a => a.job);
+    // 2️⃣ AssignedJob entries belonging to this user
+    const assignedJobs = await AssignedJob.find({ student: userId })
+      .populate({
+        path: "job",
+        populate: [
+          { path: "postedBy", select: "name email" },
+          { path: "acceptedBy", select: "name email" }  // 🔥 UPDATED
+        ]
+      })
+      .lean();
 
-    const completed = assigned
+    // 3️⃣ Extract based on status
+    const accepted = assignedJobs
+      .filter(a => a.status === "accepted")
+      .map(a => ({
+        ...a.job,
+        status: a.status,
+        acceptedBy: a.job.acceptedBy,
+        postedBy: a.job.postedBy,
+      }));
+
+    const completed = assignedJobs
       .filter(a => a.status === "completed")
-      .map(a => a.job);
+      .map(a => ({
+        ...a.job,
+        status: a.status,
+        acceptedBy: a.job.acceptedBy,
+        postedBy: a.job.postedBy,
+      }));
+
+    // 4️⃣ Add status into posted jobs
+    for (let job of posted) {
+      const match = assignedJobs.find(a => String(a.job._id) === String(job._id));
+      job.status = match?.status || "pending";
+    }
 
     res.json({ posted, accepted, completed });
+
   } catch (err) {
+    console.error("User Jobs Error:", err);
     res.status(500).json({ message: "Failed to fetch jobs" });
   }
 });

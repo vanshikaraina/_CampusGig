@@ -79,7 +79,7 @@
 
 
 import { Link, useNavigate } from "react-router-dom";
-import { FaComments } from "react-icons/fa";
+import { FaComments, FaClipboardList , FaRegNewspaper } from "react-icons/fa6";
 import "./AppStyles.css";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -127,6 +127,11 @@ export default function Navbar() {
               <Link to="/discussion" className="nav-link-discussion">
                 <FaClipboardList size={18} className="mr-1" />
                 Discussion
+              </Link>
+            )}
+            {loggedIn && (
+              <Link to="/news" className="nav-link-discussion">
+                News
               </Link>
             )}
           </>
