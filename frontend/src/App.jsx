@@ -30,6 +30,7 @@ import DiscussionBoard from "./pages/DiscussionBoard.jsx";         {/* ⬅️ NE
 import SingleDiscussionPost from "./pages/SingleDiscussionPost.jsx"
 import NewsList from "./pages/NewsList";
 import NewsDetails from "./pages/NewsDetails";
+import PostNews from "./pages/PostNews.jsx";
 
 export default function App() {
   return (
@@ -73,7 +74,10 @@ export default function App() {
               path="/chat/:posterId/:jobId/:acceptedUserId"
               element={<UserChatWrapper />}
             />
+            <Route path="/post-news" element={<PostNews />} />
+
           </Routes>
+
         </div>
 
         {/* Toast notifications */}

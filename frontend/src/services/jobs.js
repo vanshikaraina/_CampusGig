@@ -1,7 +1,23 @@
-import api from './api'; // adjust if your api.js file is named differently or located elsewhere
+// import api from './api'; // adjust if your api.js file is named differently or located elsewhere
 
-export const getJobs = (search = '', role = '') => {
-  return api.get('/jobs', { params: { search, role } });
+// export const getJobs = (search = '', role = '') => {
+//   return api.get('/jobs', { params: { search, role } });
+// };
+
+// export const acceptJob = (id) => {
+//   return api.put(`/jobs/${id}/accept`);
+// };
+
+// export const getAcceptedJobs = () => {
+//   return api.get('/jobs/accepted');
+// };
+
+
+import api from "./api"; // keep your existing import
+
+// ---------------- existing endpoints ----------------
+export const getJobs = (search = "", role = "") => {
+  return api.get("/jobs", { params: { search, role } });
 };
 
 export const acceptJob = (id) => {
@@ -9,9 +25,8 @@ export const acceptJob = (id) => {
 };
 
 export const getAcceptedJobs = () => {
-  return api.get('/jobs/accepted');
+  return api.get("/jobs/accepted");
 };
-
 
 // ---------------- 🟢 new endpoints for payments ----------------
 
@@ -22,7 +37,7 @@ export const selectWinningBid = (jobId, bidId) => {
 
 // 2️⃣ Poster completes payout (manual UTR entry for now)
 export const completePayment = (jobId, payoutRef) => {
-  return api.post(`/jobs/${jobId}/complete-payment`, { payoutRef });
+  return api.post(`/jobs/${jobId}/release-payment`, { payoutRef });
 };
 
 // 3️⃣ Fetch single job (used to refresh status after payment)

@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+// pages/DiscussionBoard.jsx
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -6,238 +7,253 @@ import { getAllDiscussions, createDiscussion } from "../services/discussionApi";
 import { useAuth } from "../context/AuthContext";
 import "./AppStyles.css";
 
+const INITIAL_LIMIT = 2;
+const FETCH_ALL_LIMIT = 10000;
+
 export default function DiscussionBoard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [discussions, setDiscussions] = useState([]);
+  // full data
+  const [allDiscussions, setAllDiscussions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedTag, setSelectedTag] = useState("");
+  const [availableTags, setAvailableTags] = useState([]);
+
+  // UI state
+  const [showAll, setShowAll] = useState(false);
+  const [filteredDiscussions, setFilteredDiscussions] = useState(null);
+  const [creating, setCreating] = useState(false);
+
+  // form states
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [tags, setTags] = useState("");
-  const [selectedTag, setSelectedTag] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [files, setFiles] = useState([]);
 
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const topRef = useRef(null);
 
-  const mountedRef = useRef(true);
+  // Fetch ALL posts once
+  const fetchAll = async () => {
+    try {
+      setLoading(true);
+      const res = await getAllDiscussions(`?page=1&limit=${FETCH_ALL_LIMIT}`);
+      const arr = Array.isArray(res?.data?.discussions) ? res.data.discussions : [];
+      setAllDiscussions(arr);
 
-  const buildQuery = (p = 1) => {
-    let q = `?page=${p}&limit=10`;
-    if (selectedTag) q += `&tag=${encodeURIComponent(selectedTag)}`;
-    return q;
+      const allTags = Array.from(
+        new Set(arr.flatMap((d) => (Array.isArray(d.tags) ? d.tags : [])))
+      );
+      setAvailableTags(allTags);
+    } catch (err) {
+      console.error("Failed to load discussions:", err);
+      alert("Failed to load discussions.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const fetchDiscussions = useCallback(
-    async (pageNum = 1, reset = false) => {
-      try {
-        setLoading(true);
-        const res = await getAllDiscussions(buildQuery(pageNum));
-        const list = res.data.discussions || [];
-
-        if (!mountedRef.current) return;
-
-        if (reset) {
-          setDiscussions(list);
-        } else {
-          setDiscussions((prev) => {
-            const ids = new Set(prev.map((p) => p._id));
-            const merged = [...prev];
-            list.forEach((item) => {
-              if (!ids.has(item._id)) merged.push(item);
-            });
-            return merged;
-          });
-        }
-
-        setPage(res.data.page || pageNum);
-        setTotalPages(res.data.totalPages || 1);
-      } catch (err) {
-        console.error("Failed fetching discussions:", err);
-      } finally {
-        if (mountedRef.current) setLoading(false);
-      }
-    },
-    [selectedTag]
-  );
-
   useEffect(() => {
-    const tagFromState = location?.state?.fromTag;
-    if (tagFromState) {
-      navigate(location.pathname + location.search, {
-        replace: true,
-        state: null,
-      });
-      if (tagFromState !== selectedTag) {
-        setSelectedTag(tagFromState);
-      }
-      return;
-    }
-
-    const params = new URLSearchParams(location.search);
-    const tagFromURL = params.get("tag") || "";
-
-    if (tagFromURL !== selectedTag) {
-      setSelectedTag(tagFromURL);
-    }
-  }, [location.search, location.state]);
-
-  useEffect(() => {
-    setDiscussions([]);
-    setPage(1);
-    fetchDiscussions(1, true);
-  }, [selectedTag, fetchDiscussions]);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
+    fetchAll();
   }, []);
 
+  // Sync URL tag filter
   useEffect(() => {
-    const handler = () => {
-      if (loading) return;
-      const nearBottom =
-        window.innerHeight + window.scrollY >=
-        document.body.offsetHeight - 500;
-      if (nearBottom && page < totalPages) {
-        fetchDiscussions(page + 1, false);
-      }
-    };
-    window.addEventListener("scroll", handler);
-    return () => window.removeEventListener("scroll", handler);
-  }, [loading, page, totalPages, fetchDiscussions]);
+    const params = new URLSearchParams(location.search);
+    const t = params.get("tag") || "";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!user) return alert("You must be logged in to post a discussion.");
-    if (!title.trim() || !content.trim())
-      return alert("Title and content are required.");
+    if (t) {
+      setSelectedTag(t);
+      const matched = allDiscussions.filter(
+        (p) => Array.isArray(p.tags) && p.tags.includes(t)
+      );
+      setFilteredDiscussions(matched);
+      setShowAll(true);
 
-    try {
-      const tagList = tags.split(",").map((t) => t.trim()).filter(Boolean);
-      const res = await createDiscussion({
-        title: title.trim(),
-        content: content.trim(),
-        tags: tagList,
-      });
-      setDiscussions((prev) => [res.data, ...prev]);
-      setTitle("");
-      setContent("");
-      setTags("");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) {
-      console.error("Failed to create discussion:", err);
-      alert("Could not post discussion. Try again.");
+      setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+    } else {
+      setSelectedTag("");
+      setFilteredDiscussions(null);
     }
-  };
+  }, [location.search, allDiscussions]);
+
+  // Visible items
+  const visibleItems = (() => {
+    if (selectedTag && filteredDiscussions) return filteredDiscussions;
+    if (showAll) return allDiscussions;
+    return allDiscussions.slice(0, INITIAL_LIMIT);
+  })();
 
   const handleTagClick = (tag) => {
-    if (selectedTag === tag) {
+    if (!tag) {
+      navigate(window.location.pathname, { replace: true });
       setSelectedTag("");
-      const base = window.location.pathname;
-      window.history.replaceState({}, "", base);
-    } else {
-      setSelectedTag(tag);
-      const base = window.location.pathname;
-      const newUrl = `${base}?tag=${encodeURIComponent(tag)}`;
-      window.history.replaceState({}, "", newUrl);
+      setFilteredDiscussions(null);
+      return;
     }
-
-    setDiscussions([]);
-    setPage(1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    navigate(`?tag=${encodeURIComponent(tag)}`, { replace: true });
   };
 
-  // -------------------- RETURN FIXED --------------------
+  const openDiscussion = (id) => navigate(`/discussion/${id}`);
+
+  const toggleShowAll = () => {
+    const next = !showAll;
+    setShowAll(next);
+
+    setTimeout(() => {
+      if (topRef.current) {
+        topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 60);
+  };
+
+  // ---------------------------
+  // ⭐ UPDATED SUBMIT WITH FILES
+  // ---------------------------
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!user) return alert("You must be logged in to post.");
+    if (!title.trim() || !content.trim()) return alert("Title & content required.");
+
+    try {
+      setCreating(true);
+
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("content", content.trim());
+
+      const tagList = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
+      tagList.forEach((t) => formData.append("tags", t));
+
+      // Add attachments
+      files.forEach((file) => formData.append("attachments", file));
+
+      const res = await createDiscussion(formData);
+
+      // Add newly created post to list
+      setAllDiscussions((prev) => [res.data, ...prev]);
+
+      // Add new tags
+      if (tagList.length) {
+        setAvailableTags((prev) => Array.from(new Set([...(prev || []), ...tagList])));
+      }
+
+      // Reset form
+      setTitle("");
+      setContent("");
+      setTagsInput("");
+      setFiles([]);
+
+      setShowAll(true);
+      setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
+    } catch (err) {
+      console.error("Create failed:", err);
+      alert("Could not post discussion.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
-    <div className="discussion-container">
+    <div className="discussion-container" ref={topRef}>
       <h2 className="discussion-title">Campus Gig Discussion Board 💬</h2>
 
-      {/* ----------- DISCUSSION LIST FIRST ----------- */}
       {selectedTag && (
         <div className="selected-tag-banner">
-          Showing discussions tagged: <strong>#{selectedTag}</strong>
-          <button
-            className="clear-tag-btn"
-            onClick={() => {
-              setSelectedTag("");
-              const base = window.location.pathname;
-              window.history.replaceState({}, "", base);
-              setDiscussions([]);
-              setPage(1);
-            }}
-          >
+          Showing: <strong>#{selectedTag}</strong>
+          <button className="clear-tag-btn" onClick={() => handleTagClick("")}>
             Clear
           </button>
         </div>
       )}
 
-      {loading && page === 1 && (
-        <Skeleton count={4} height={110} style={{ marginBottom: "12px" }} />
-      )}
+      {/* TAG BAR */}
+      <div className="tag-bar">
+        <span className="filter-label">Filter:</span>
 
-      {(!discussions || discussions.length === 0) && !loading ? (
-        <p className="no-posts">No discussions yet. Start the conversation!</p>
-      ) : (
-        <div className="discussion-list">
-          {discussions.map((d) => (
-            <div
-              key={d._id}
-              className="discussion-card"
-              onClick={() => navigate(`/discussion/${d._id}`)}
+        {availableTags.length === 0 && !loading ? (
+          <span className="no-posts">No tags yet</span>
+        ) : (
+          availableTags.map((t) => (
+            <button
+              key={t}
+              className={`tag-pill ${t === selectedTag ? "tag-selected" : ""}`}
+              onClick={() => handleTagClick(t)}
+              type="button"
             >
-              <h3 className="discussion-card-title">{d.title}</h3>
+              {t}
+            </button>
+          ))
+        )}
+
+        <button className="tag-clear" onClick={() => handleTagClick("")}>
+          Clear
+        </button>
+      </div>
+
+      {/* LOADING */}
+      {loading && <Skeleton count={INITIAL_LIMIT} height={90} className="skeleton-loader" />}
+
+      {/* LIST */}
+      <div className={`discussion-list ${showAll ? "expanded" : "collapsed"}`}>
+        {visibleItems.length === 0 && !loading ? (
+          <p className="no-posts">No discussions yet. Start the conversation!</p>
+        ) : (
+          visibleItems.map((d) => (
+            <div key={d._id} className="discussion-card" onClick={() => openDiscussion(d._id)}>
+              <h3 className="discussion-card-title">
+                {d.title || d.content?.slice(0, 120) || "Untitled"}
+              </h3>
+
               <p className="discussion-card-content">
-                {d.content && d.content.length > 140
-                  ? d.content.substring(0, 140) + "..."
-                  : d.content}
+                {d.content?.length > 140 ? d.content.substring(0, 140) + "..." : d.content}
               </p>
 
               <div className="tag-container">
-                {d.tags?.map((tag, i) => (
-                  <span
-                    key={i}
-                    className={`tag ${
-                      selectedTag === tag ? "tag-selected" : ""
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTagClick(tag);
-                    }}
-                  >
-                    #{tag}
-                  </span>
-                ))}
+                {Array.isArray(d.tags) &&
+                  d.tags.map((tag, i) => (
+                    <span
+                      key={i}
+                      className={`tag ${selectedTag === tag ? "tag-selected" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTagClick(tag);
+                      }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
               </div>
 
               <div className="meta-info">
-                <span>👤 {d.author?.name || "Unknown User"}</span>
+                <span>👤 {d.author?.name || "Unknown"}</span>
                 <span>
-                  💬{" "}
-                  {Array.isArray(d.comments)
-                    ? d.comments.length
-                    : d.commentsCount ?? 0}{" "}
-                  replies
+                  💬 {Array.isArray(d.comments) ? d.comments.length : d.commentsCount ?? 0} replies
                 </span>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
-      {loading && page > 1 && (
-        <p className="loading-more">Loading more discussions...</p>
+      {/* SEE MORE */}
+      {allDiscussions.length > INITIAL_LIMIT && (
+        <button className="see-more-btn" onClick={toggleShowAll}>
+          {showAll ? "See Less" : `See More (${allDiscussions.length - INITIAL_LIMIT} more)`}
+        </button>
       )}
 
       <hr className="divider" />
 
-      {/* ----------- NEW DISCUSSION FORM AT BOTTOM ----------- */}
+      {/* -----------------------------
+          CREATE DISCUSSION FORM
+      ------------------------------ */}
       <div className="discussion-form-card">
         <h3 className="section-title">📝 Start a New Discussion</h3>
-        <form onSubmit={handleSubmit} className="discussion-form" autoComplete="off">
+
+        <form onSubmit={handleSubmit} autoComplete="off">
           <input
             type="text"
             placeholder="Post Title"
@@ -245,21 +261,68 @@ export default function DiscussionBoard() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+
           <textarea
             placeholder="Write your question or topic..."
             className="textarea-field"
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
+
           <input
             type="text"
             placeholder="Tags (comma-separated)"
             className="input-field"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
           />
-          <button className="post-btn" type="submit">
-            Post Discussion
+
+          {/* ⭐ FILE INPUT */}
+          <input
+            type="file"
+            multiple
+            className="input-field"
+            onChange={(e) => setFiles(Array.from(e.target.files))}
+          />
+
+          {/* ⭐ FILE PREVIEW */}
+          {files.length > 0 && (
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 15 }}>
+              {files.map((f, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: 10,
+                    borderRadius: 10,
+                    border: "1px solid #ddd",
+                    fontSize: 12,
+                  }}
+                >
+                  {f.name}
+                  <button
+                    style={{
+                      display: "block",
+                      marginTop: 6,
+                      background: "transparent",
+                      color: "#b22",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 12,
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setFiles(files.filter((_, idx) => idx !== i));
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button className="post-btn" type="submit" disabled={creating}>
+            {creating ? "Posting..." : "Post Discussion"}
           </button>
         </form>
       </div>

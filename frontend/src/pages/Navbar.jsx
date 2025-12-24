@@ -125,7 +125,7 @@ export default function Navbar() {
             {loggedIn && <Link to="/my-jobs">My Jobs</Link>}
             {loggedIn && (
               <Link to="/discussion" className="nav-link-discussion">
-                <FaClipboardList size={18} className="mr-1" />
+                {/* <FaClipboardList size={18} className="mr-1" /> */}
                 Discussion
               </Link>
             )}
@@ -134,6 +134,12 @@ export default function Navbar() {
                 News
               </Link>
             )}
+            {/* Add this link for posting news */}
+      {loggedIn && (
+        <Link to="/post-news" className="nav-link-discussion">
+          Post News
+        </Link>
+      )}
           </>
         )}
       </div>

@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { completePayment } from "../services/jobsApi";
+import { completePayment } from "../services/jobs";
 
-export default function CompletePaymentButton({ jobId, token }) {
+export default function CompletePaymentButton({ jobId }) {
   const [payoutRef, setPayoutRef] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onComplete = async () => {
     try {
       setLoading(true);
-      await completePayment(jobId, payoutRef, token);
-      alert("Marked completed & payout recorded");
+      await completePayment(jobId, payoutRef);
+      alert("Payment released successfully");
       setPayoutRef("");
     } catch (e) {
       console.error(e);
-      alert(e.message || "Failed to complete");
+      alert(e.response?.data?.message || "Failed to release payment");
     } finally {
       setLoading(false);
     }
@@ -26,8 +26,8 @@ export default function CompletePaymentButton({ jobId, token }) {
         value={payoutRef}
         onChange={(e) => setPayoutRef(e.target.value)}
       />
-      <button onClick={onComplete} disabled={loading}>
-        {loading ? "Saving…" : "Complete & Release"}
+      <button onClick={onComplete} disabled={loading || !payoutRef}>
+        {loading ? "Releasing…" : "Complete & Release"}
       </button>
     </div>
   );

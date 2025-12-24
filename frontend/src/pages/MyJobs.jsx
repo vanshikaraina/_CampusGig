@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { FaStar } from "react-icons/fa";
 import { toast } from "react-toastify"; 
 import "./AppStyles.css";
+import CompletePaymentButton from "../components/CompletePaymentButton";
 
 const MyJobs = ({ onProfileUpdate }) => {
   const { user, loading } = useAuth();
@@ -134,6 +135,13 @@ const MyJobs = ({ onProfileUpdate }) => {
                   >
                     View Bids
                   </button>
+                  {/* 💸 Complete & Release Payment */}
+{job.payment?.status === "PENDING" && (
+  <div style={{ marginTop: "12px" }}>
+    <CompletePaymentButton jobId={job._id} />
+  </div>
+)}
+
                 </div>
 
                 {job.acceptedBy && job.status === "completed" && (
